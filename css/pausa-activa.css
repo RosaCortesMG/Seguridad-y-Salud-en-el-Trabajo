@@ -1,0 +1,139 @@
+/* pausa-activa.css — lo que ve el trabajador en su celular.
+   Fuentes: Fredoka (títulos) y Nunito (texto), cargadas en cada página.
+   Los colores vienen de variables que el editor cambia en vivo:
+   generales (--pa-*) y uno por elemento (--c, puesto en cada [data-c]). */
+.pa{
+  --pa-fondo:#eaf3fd; --pa-fondo2:#e3f6ee; --pa-tarjeta:#ffffff;
+  --pa-acento:#1f6fd6; --pa-texto:#0f2434; --pa-boton-texto:#ffffff;
+  --pa-titulos:'Fredoka','Nunito',system-ui,sans-serif;
+  font-family:'Nunito',system-ui,sans-serif;
+  color:var(--pa-texto);
+  background:linear-gradient(165deg,var(--pa-fondo) 0%,var(--pa-fondo2) 100%);
+  padding:18px 14px 30px;display:flex;flex-direction:column;gap:14px;
+  min-height:100%;box-sizing:border-box;
+}
+.pa *{box-sizing:border-box}
+.pa > *{width:100%;max-width:520px;margin-inline:auto}
+.pa.pa-pagina{min-height:100vh;padding-top:24px}
+.pa [data-c]{color:var(--c)}
+
+.pa-card{background:var(--pa-tarjeta);border-radius:22px;padding:20px 18px;box-shadow:0 6px 22px rgba(15,36,52,.08)}
+.pa h1,.pa h2,.pa legend,.pa-reto-tag,.pa-enviar{font-family:var(--pa-titulos)}
+.pa h1{margin:0 0 8px;font-size:27px;line-height:1.15;font-weight:600;text-align:center;overflow-wrap:anywhere}
+.pa h2{margin:0 0 16px;font-size:21px;line-height:1.2;font-weight:600;text-align:center}
+.pa-desc{margin:0 0 16px;font-size:15px;line-height:1.55;text-align:center;white-space:pre-line}
+.pa-desc:empty{display:none}
+
+/* Video */
+.pa-video{border-radius:16px;overflow:hidden;background:#0f2434;aspect-ratio:16/9}
+.pa-video iframe,.pa-video video{width:100%;height:100%;border:0;display:block}
+.pa-video.vacio,.pa-video.enlace{
+  display:grid;place-items:center;text-align:center;padding:14px;font-size:14px;font-weight:700;
+  background:color-mix(in srgb,var(--pa-acento) 10%,transparent);color:var(--pa-acento);
+  border:1.5px dashed color-mix(in srgb,var(--pa-acento) 40%,transparent);
+}
+.pa-video.enlace a{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;
+  background:var(--pa-acento);color:#fff;text-decoration:none;
+}
+
+/* Formulario */
+.pa-form label{display:block;margin-bottom:12px;font-size:14.5px;font-weight:800}
+.pa-form input{
+  display:block;width:100%;margin-top:6px;padding:12px 14px;border-radius:14px;
+  border:2px solid color-mix(in srgb,var(--pa-acento) 22%,transparent);
+  background:color-mix(in srgb,var(--pa-acento) 4%,var(--pa-tarjeta));color:var(--pa-texto);
+  font:inherit;font-size:16px;font-weight:600;
+}
+.pa-form input::placeholder{color:color-mix(in srgb,var(--pa-texto) 40%,transparent);font-weight:500}
+.pa-form input:focus{outline:none;border-color:var(--pa-acento);box-shadow:0 0 0 4px color-mix(in srgb,var(--pa-acento) 16%,transparent)}
+
+/* ¿Aportó a mi bienestar? */
+.pa-bien{border:0;padding:0;margin:8px 0 16px;min-width:0}
+.pa-bien legend{width:100%;text-align:center;font-size:18px;font-weight:600;margin-bottom:10px;padding:0}
+.pa-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pa .pa-opt{
+  display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px 12px;border-radius:18px;
+  border:2px solid color-mix(in srgb,var(--c) 30%,transparent);
+  background:color-mix(in srgb,var(--c) 6%,transparent);
+  font:inherit;font-size:14px;font-weight:800;cursor:pointer;line-height:1.25;
+  transition:border-color .15s,background .15s,opacity .15s,transform .1s;
+}
+.pa-opt:active{transform:scale(.97)}
+.pa-opt .emo{font-size:44px;line-height:1;display:inline-block}
+.pa-opt.si .emo{animation:pa-flotar 2.6s ease-in-out infinite}
+.pa-opt.no .emo{animation:pa-flotar 2.6s ease-in-out .7s infinite}
+.pa-opts.elegido .pa-opt:not(.on){opacity:.45}
+.pa .pa-opt.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 15%,transparent)}
+.pa-opt.si.on .emo{animation:pa-pulgar .9s cubic-bezier(.3,1.6,.5,1) 1,pa-flotar 2.6s ease-in-out .9s infinite}
+.pa-opt.no.on .emo{animation:pa-negar .75s ease-in-out 2}
+
+/* Reto: el color del recuadro y la etiqueta sale de --c (color "reto") */
+.pa-reto{
+  padding:16px 14px;border-radius:18px;text-align:center;
+  background:color-mix(in srgb,var(--c) 10%,transparent);
+  border:2px dashed color-mix(in srgb,var(--c) 50%,transparent);
+}
+.pa-reto-tag{display:inline-flex;align-items:center;gap:6px;font-size:16px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.pa-preg{margin:8px 0 2px;font-size:16px;font-weight:800;line-height:1.4;overflow-wrap:anywhere}
+.pa-reto input{margin-top:10px;text-align:center}
+
+.pa-err{margin-top:12px;font-size:14px;font-weight:700;text-align:center;color:#b4380a;background:#fff1ea;padding:10px 12px;border-radius:12px}
+.pa .pa-enviar{
+  width:100%;margin-top:18px;padding:15px;border:0;border-radius:16px;cursor:pointer;
+  background:var(--c);color:var(--pa-boton-texto);font-size:19px;font-weight:600;letter-spacing:.01em;
+  box-shadow:0 8px 20px color-mix(in srgb,var(--c) 35%,transparent);
+}
+.pa-enviar:disabled{opacity:.6;cursor:default}
+
+/* Despedida: al enviar, solo queda esta tarjeta ocupando la pantalla */
+.pa.pa-fin > :not(.pa-gracias){display:none}
+.pa-gracias{
+  flex:1;min-height:440px;text-align:center;padding:40px 22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+}
+.pa-check{width:104px;height:104px;margin-bottom:8px;animation:pa-pop .6s cubic-bezier(.3,1.6,.5,1)}
+.pa-check svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}
+.pa-check circle{fill:color-mix(in srgb,currentColor 12%,transparent);stroke-dasharray:145;stroke-dashoffset:145;animation:pa-trazo .7s ease-out .1s forwards}
+.pa-check path{stroke-width:4.5;stroke-dasharray:36;stroke-dashoffset:36;animation:pa-trazo .4s ease-out .75s forwards}
+.pa-registrada{
+  font-family:var(--pa-titulos);font-weight:600;font-size:13.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:8px 16px;border-radius:999px;background:color-mix(in srgb,var(--c) 14%,transparent);
+  opacity:0;animation:pa-subir .5s ease-out 1s forwards;
+}
+.pa .pa-gracias h2{margin:10px 0 0;font-size:30px;line-height:1.15;opacity:0;animation:pa-subir .5s ease-out 1.25s forwards}
+.pa-gracias p{margin:0;font-size:17px;font-weight:700;line-height:1.45;max-width:24ch;opacity:0;animation:pa-subir .5s ease-out 1.5s forwards}
+.pa-firma{
+  margin-top:18px;font-weight:900;font-size:13px;letter-spacing:.32em;padding-left:.32em;
+  opacity:0;animation:pa-aparecer .6s ease-out 1.9s forwards;
+}
+.pa-firma::before,.pa-firma::after{content:"";display:inline-block;width:22px;height:2px;border-radius:2px;background:currentColor;opacity:.35;vertical-align:middle;margin:0 10px}
+
+/* Aviso de "no disponible" */
+.pa-aviso{text-align:center;padding:40px 20px}
+.pa-aviso .emo{font-size:48px}
+.pa-aviso h1{font-size:22px;margin:10px 0 6px}
+.pa-aviso p{margin:0;opacity:.75;font-size:15px;line-height:1.5}
+
+@keyframes pa-flotar{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes pa-pulgar{
+  0%{transform:scale(1) rotate(0)}
+  30%{transform:scale(1.4) rotate(-20deg)}
+  60%{transform:scale(.92) rotate(8deg)}
+  100%{transform:scale(1) rotate(0)}
+}
+@keyframes pa-negar{
+  0%,100%{transform:translateX(0) rotate(0)}
+  20%{transform:translateX(-7px) rotate(-12deg)}
+  40%{transform:translateX(7px) rotate(12deg)}
+  60%{transform:translateX(-5px) rotate(-7deg)}
+  80%{transform:translateX(5px) rotate(7deg)}
+}
+@keyframes pa-pop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes pa-trazo{to{stroke-dashoffset:0}}
+@keyframes pa-subir{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pa-aparecer{to{opacity:.75}}
+@media (prefers-reduced-motion:reduce){
+  .pa .emo{animation:none!important}
+  .pa-gracias *{animation:none!important;opacity:1!important;stroke-dashoffset:0!important}
+}

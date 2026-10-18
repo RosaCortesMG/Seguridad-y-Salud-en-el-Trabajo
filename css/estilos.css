@@ -1,0 +1,70 @@
+/* estilos.css — base compartida: blanco con tintes azules y verdes */
+:root{
+  --bg:#f5f8fb;
+  --surface:#ffffff;
+  --line:#e1e8f0;
+  --ink:#0f2434;
+  --muted:#5a6e7f;
+  --blue:#1f6fd6;
+  --blue-dark:#1857ad;
+  --blue-soft:#eaf2fd;
+  --green:#12a07c;
+  --green-dark:#0d7f62;
+  --green-soft:#e6f6f0;
+  --danger:#b4380a;
+  --danger-bg:#fff1ea;
+  --ok:#0d7a5e;
+  --ok-bg:#e6f6ef;
+  --radius:18px;
+  --shadow:0 1px 2px rgba(15,36,52,.05), 0 10px 30px rgba(15,36,52,.07);
+  --grad:linear-gradient(120deg,var(--blue) 0%,#1590b0 55%,var(--green) 100%);
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;min-height:100%}
+body{
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  color:var(--ink);background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit}
+
+/* Marca */
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{
+  width:42px;height:42px;border-radius:12px;background:var(--grad);
+  display:grid;place-items:center;color:#fff;flex:none;
+  box-shadow:0 6px 16px rgba(31,111,214,.25);
+}
+.brand .mark svg{width:22px;height:22px}
+.brand .name{line-height:1.1}
+.brand .name b{display:block;font-size:18px;font-weight:800;letter-spacing:-.01em}
+.brand .name span{display:block;font-size:11.5px;font-weight:600;color:var(--green-dark);letter-spacing:.04em;text-transform:uppercase}
+
+/* Mensajes */
+.msg{font-size:13.5px;border-radius:12px;padding:11px 14px;margin-bottom:16px;line-height:1.45;display:none}
+.msg.err{display:block;background:var(--danger-bg);color:var(--danger);border:1px solid #f6cdb8}
+.msg.info{display:block;background:var(--ok-bg);color:var(--ok);border:1px solid #bfe6d6}
+
+/* Botones */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 18px;border-radius:12px;border:none;cursor:pointer;
+  font-size:15px;font-weight:700;transition:filter .15s,transform .1s,box-shadow .15s;
+}
+.btn svg{width:17px;height:17px}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.6;cursor:default}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 6px 18px rgba(31,111,214,.25)}
+.btn-primary:hover:not(:disabled){background:var(--blue-dark)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--blue-soft);color:var(--blue-dark);border-color:#cfe0f7}
+
+/* Aviso flotante */
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;
+  background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:14px;
+  box-shadow:var(--shadow);transition:opacity .2s,transform .2s;pointer-events:none;
+  max-width:calc(100% - 32px);z-index:50;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}

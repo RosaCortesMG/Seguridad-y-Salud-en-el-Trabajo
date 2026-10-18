@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function autenticado() { return request.auth != null; }
+    function esDueno(uid) { return autenticado() && request.auth.uid == uid; }
+    function texto(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
+    function opcional(d, campo, max) {
+      return !(campo in d) || (d[campo] is string && d[campo].size() <= max);
+    }
+    function tiposValidos() {
+      return ['pausa_activa', 'pausa_motivacional', 'campana_informativa', 'sugerencia_aprendizaje'];
+    }
+
+    // ---- Perfiles de usuarios de RH ----
+    // usuarios/{uid}: nombre, email, empresa?, cargo?, rol, creado
+    match /usuarios/{uid} {
+      // Cada quien lee solo su propio perfil.
+      allow read: if esDueno(uid);
+
+      // Crear el propio perfil al registrarse. Nadie puede asignarse otro rol
+      // ni usar un correo distinto al de su cuenta.
+      allow create: if esDueno(uid)
+        && request.resource.data.keys().hasOnly(['nombre', 'email', 'empresa', 'cargo', 'rol', 'creado'])
+        && request.resource.data.keys().hasAll(['nombre', 'email', 'rol', 'creado'])
+        && texto(request.resource.data.nombre, 120)
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.rol == 'rrhh'
+        && request.resource.data.creado == request.time
+        && opcional(request.resource.data, 'empresa', 120)
+        && opcional(request.resource.data, 'cargo', 120);
+
+      // Editar solo nombre, empresa y cargo (email, rol y fecha son fijos).
+      allow update: if esDueno(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['nombre', 'empresa', 'cargo'])
+        && texto(request.resource.data.nombre, 120)
+        && opcional(request.resource.data, 'empresa', 120)
+        && opcional(request.resource.data, 'cargo', 120);
+
+      allow delete: if false;
+    }
+
+    // ---- Pausas creadas por RH (activa, motivacional, campaña, sugerencia) ----
+    // ediciones/{id}: uid (dueño), tipo, titulo, estado, creado, ...contenido
+    match /ediciones/{id} {
+      // El dueño lee y lista sus ediciones (consultas filtradas por uid).
+      allow read: if autenticado() && resource.data.uid == request.auth.uid;
+      // Cualquiera con el enlace puede abrir UNA edición activa (no listar).
+      allow get: if resource.data.estado == 'activa';
+
+      allow create: if autenticado()
+        && request.resource.data.keys().hasAll(['uid', 'tipo', 'titulo', 'estado', 'creado'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.tipo in tiposValidos()
+        && texto(request.resource.data.titulo, 200)
+        && request.resource.data.estado in ['borrador', 'activa', 'cerrada']
+        && request.resource.data.creado == request.time;
+
+      // El dueño puede editar, pero no cambiar de dueño, tipo ni fecha de creación.
+      allow update: if autenticado()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.tipo == resource.data.tipo
+        && request.resource.data.creado == resource.data.creado
+        && texto(request.resource.data.titulo, 200)
+        && request.resource.data.estado in ['borrador', 'activa', 'cerrada'];
+
+      allow delete: if autenticado() && resource.data.uid == request.auth.uid;
+    }
+
+    // ---- Registros de participación (quién, cómo y qué) ----
+    // registros/{id}: edicionId, propietario, tipo, participante{}, contenido{}, medio{}, authUid?, creado
+    match /registros/{id} {
+      function edicion() {
+        return get(/databases/$(database)/documents/ediciones/$(request.resource.data.edicionId)).data;
+      }
+
+      // Solo el usuario de RH dueño de la edición ve sus registros.
+      allow read: if autenticado() && resource.data.propietario == request.auth.uid;
+
+      // Cualquier colaborador con el enlace puede registrar su participación,
+      // siempre que la edición exista, esté activa y los datos coincidan con ella.
+      allow create: if request.resource.data.keys().hasOnly(['edicionId', 'propietario', 'tipo', 'participante', 'contenido', 'medio', 'authUid', 'creado'])
+        && request.resource.data.keys().hasAll(['edicionId', 'propietario', 'tipo', 'participante', 'contenido', 'medio', 'creado'])
+        && request.resource.data.edicionId is string
+        && exists(/databases/$(database)/documents/ediciones/$(request.resource.data.edicionId))
+        && edicion().estado == 'activa'
+        && request.resource.data.propietario == edicion().uid
+        && request.resource.data.tipo == edicion().tipo
+        && request.resource.data.participante is map
+        && request.resource.data.contenido is map
+        && request.resource.data.medio is map
+        && request.resource.data.creado == request.time
+        && (!('authUid' in request.resource.data)
+            || (autenticado() && request.resource.data.authUid == request.auth.uid));
+
+      // Los registros son evidencia: no se modifican ni se borran desde la app.
+      allow update, delete: if false;
+    }
+
+    // Todo lo demás queda denegado por defecto.
+  }
+}

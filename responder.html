@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta RH</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/pausa-activa.css">
+<link rel="stylesheet" href="css/pantalla-carga.css">
+<style>
+  html,body{margin:0;background:#eaf3fd}
+  body.bloqueado{overflow:hidden}
+  .cargando{min-height:100vh;display:grid;place-items:center}
+  .cargando i{width:38px;height:38px;border-radius:50%;border:4px solid #cfe0f7;border-top-color:#1f6fd6;animation:girar .8s linear infinite}
+  @keyframes girar{to{transform:rotate(360deg)}}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+  <!-- Página pública que abre el trabajador con el enlace: responder.html?e=<id> -->
+  <div id="app"><div class="cargando" aria-label="Cargando"><i></i></div></div>
+
+<script type="module">
+  import { db } from "./js/firebase-config.js";
+  import {
+    doc, getDoc, addDoc, collection, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const app = document.getElementById("app");
+  const id = new URLSearchParams(location.search).get("e");
+
+  function aviso(emo, titulo, texto) {
+    app.innerHTML = `<div class="pa pa-pagina"><section class="pa-card pa-aviso">
+      <div class="emo"></div><h1></h1><p></p></section></div>`;
+    app.querySelector(".emo").textContent = emo;
+    app.querySelector("h1").textContent = titulo;
+    app.querySelector("p").textContent = texto;
+  }
+  const noDisponible = () => aviso("🔒", "Este enlace no está disponible",
+    "Puede que la actividad haya terminado o que el enlace esté incompleto. Consulta con Recursos Humanos.");
+
+  // "Cómo" participó: datos básicos del dispositivo, sin nada sensible.
+  function medio() {
+    const ua = navigator.userAgent;
+    return {
+      canal: "enlace",
+      dispositivo: /Mobi|Android|iPhone|iPad/i.test(ua) ? "móvil" : "computador",
+      navegador: ua.slice(0, 300),
+      idioma: navigator.language || "",
+      pantalla: `${screen.width}x${screen.height}`
+    };
+  }
+
+  async function iniciar() {
+    if (!id) return noDisponible();
+
+    let ed;
+    try {
+      const snap = await getDoc(doc(db, "ediciones", id));
+      if (!snap.exists()) return noDisponible();
+      ed = snap.data();
+    } catch {
+      return noDisponible();
+    }
+    if (ed.estado !== "activa") return noDisponible();
+
+    document.title = ed.titulo || "Conecta RH";
+
+    if (ed.tipo === "pausa_activa") {
+      const [{ montarPausaActiva, normalizar }, { mostrarPantallaCarga }] = await Promise.all([
+        import("./js/pausa-activa-vista.js"),
+        import("./js/pantalla-carga.js")
+      ]);
+      const datos = normalizar(ed);
+      document.body.style.background = datos.estilo.fondo;
+
+      // La pausa se monta debajo (así el video va cargando) y encima va la pantalla de carga.
+      document.body.classList.add("bloqueado");
+      mostrarPantallaCarga(document.body, { tipo: ed.tipo, frase: datos.textos.carga, estilo: datos.estilo })
+        .then(() => document.body.classList.remove("bloqueado"));
+
+      montarPausaActiva(app, ed, {
+        modo: "real",
+        pagina: true,
+        onEnviar: async (r) => {
+          try {
+            await addDoc(collection(db, "registros"), {
+              edicionId: id,
+              propietario: ed.uid,
+              tipo: ed.tipo,
+              participante: { nombre: r.nombre, cargo: r.cargo },
+              contenido: { bienestar: r.bienestar, pregunta: r.pregunta, respuesta: r.respuesta },
+              medio: medio(),
+              creado: serverTimestamp()
+            });
+          } catch (e) {
+            throw new Error(e.code === "permission-denied"
+              ? "Esta actividad ya no recibe respuestas."
+              : "No se pudo enviar. Revisa tu conexión e intenta de nuevo.");
+          }
+        }
+      });
+      return;
+    }
+
+    aviso("🛠️", "Muy pronto", "Este tipo de actividad aún no está disponible.");
+  }
+
+  iniciar();
+</script>
+</body>
+</html>

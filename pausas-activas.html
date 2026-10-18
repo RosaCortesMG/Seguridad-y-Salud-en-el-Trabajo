@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta RH · Pausas Activas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="css/pausa-activa.css">
+<link rel="stylesheet" href="css/pantalla-carga.css">
+<script type="module">import "./js/auth-guard.js";</script>
+<style>
+  body{min-height:100vh;background:radial-gradient(ellipse 60% 40% at 100% 0%,#e3eefc 0%,transparent 60%),var(--bg)}
+  .topbar{max-width:1240px;margin:0 auto;padding:16px 24px;display:flex;align-items:center;gap:12px}
+  .topbar .spacer{flex:1}
+  .topbar .btn{padding:9px 14px;font-size:14px}
+  main{max-width:1240px;margin:0 auto;padding:0 24px 48px}
+
+  .encabezado{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:6px 0 18px}
+  .encabezado .ico{width:48px;height:48px;border-radius:14px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:none}
+  .encabezado .ico svg{width:26px;height:26px}
+  .encabezado h1{margin:0;font-size:26px;letter-spacing:-.02em}
+  .encabezado p{margin:2px 0 0;color:var(--muted);font-size:14px}
+
+  /* Mis pausas */
+  .mis{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:20px;box-shadow:var(--shadow)}
+  .mis-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+  .mis-top h2{margin:0;font-size:15px}
+  .mis-top .btn{padding:8px 14px;font-size:13.5px}
+  .lista{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+  .lista:empty::before{content:"Aún no tienes pausas activas. ¡Crea la primera!";color:var(--muted);font-size:13.5px;padding:6px 2px}
+  .item{
+    flex:none;width:220px;text-align:left;border:1.5px solid var(--line);background:#fbfdff;border-radius:14px;
+    padding:11px 12px;cursor:pointer;font:inherit;color:var(--ink);transition:border-color .15s,background .15s;
+  }
+  .item:hover{border-color:#c7dbf6}
+  .item.actual{border-color:var(--blue);background:var(--blue-soft)}
+  .item b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+  .pill.borrador{background:#eef1f5;color:#5a6e7f}
+  .pill.activa{background:var(--green-soft);color:var(--green-dark)}
+  .pill.cerrada{background:#fff1ea;color:#b4380a}
+
+  /* Editor + vista previa */
+  .zona{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:24px;align-items:start}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .tabs{display:flex;border-bottom:1px solid var(--line);background:#fbfdff;overflow-x:auto}
+  .tab{flex:1;min-width:max-content;padding:14px 16px;border:0;background:none;font:inherit;font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent}
+  .tab.on{color:var(--blue);border-bottom-color:var(--blue);background:#fff}
+  .seccion{padding:20px;display:none}
+  .seccion.on{display:block}
+  .seccion h3{margin:18px 0 10px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--green-dark)}
+  .seccion h3:first-child{margin-top:0}
+  .campo{margin-bottom:14px}
+  .campo label{display:block;font-size:12.5px;font-weight:700;margin-bottom:6px}
+  .campo input[type=text],.campo input[type=url],.campo textarea{
+    width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;font:inherit;font-size:14.5px;
+    background:#fbfdff;color:var(--ink);transition:border-color .15s,box-shadow .15s;
+  }
+  .campo textarea{resize:vertical;min-height:72px;line-height:1.5}
+  .campo input:focus,.campo textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(31,111,214,.12);background:#fff}
+  .ayuda{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .ayuda.ok{color:var(--green-dark)}
+  .ayuda.mal{color:var(--danger)}
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  .emo-label{display:flex;align-items:center;gap:6px}
+
+  /* Etiqueta + selector de color del elemento */
+  .lbl{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .campo .lbl label{margin:0}
+  .minis{display:flex;gap:6px;align-items:center}
+  .mini{
+    width:28px;height:28px;padding:0;border:2px solid var(--line);border-radius:50%;
+    cursor:pointer;background:none;overflow:hidden;flex:none;transition:transform .12s,border-color .12s;
+  }
+  .mini:hover{transform:scale(1.12);border-color:#c7dbf6}
+  .mini::-webkit-color-swatch-wrapper{padding:0}
+  .mini::-webkit-color-swatch{border:0;border-radius:50%}
+  .mini::-moz-color-swatch{border:0;border-radius:50%}
+  .nota{font-size:12.5px;color:var(--muted);background:var(--blue-soft);border-radius:10px;padding:9px 12px;margin:0 0 16px;display:flex;gap:8px;align-items:center}
+  .nota .mini{pointer-events:none;width:20px;height:20px}
+  .btn-carga{padding:9px 14px;font-size:13.5px}
+
+  .presets{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+  .preset{
+    display:flex;align-items:center;gap:8px;padding:6px 12px 6px 6px;border-radius:999px;border:1.5px solid var(--line);
+    background:#fff;cursor:pointer;font:inherit;font-size:13px;font-weight:600;color:var(--ink);
+  }
+  .preset:hover{border-color:#c7dbf6}
+  .preset i{width:24px;height:24px;border-radius:50%;border:1px solid rgba(0,0,0,.08)}
+  .colores{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .color{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1.5px solid var(--line);border-radius:12px;background:#fbfdff;cursor:pointer}
+  .color input{width:34px;height:34px;border:0;padding:0;background:none;cursor:pointer;flex:none}
+  .color span{font-size:13px;font-weight:600}
+  .color small{display:block;color:var(--muted);font-weight:500;font-family:ui-monospace,monospace;font-size:11.5px}
+
+  /* Acciones y enlace */
+  .acciones{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:16px 20px;border-top:1px solid var(--line);background:#fbfdff}
+  .acciones .estado{margin-right:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+  .btn-green{background:var(--green);color:#fff;box-shadow:0 6px 18px rgba(18,160,124,.25)}
+  .btn-green:hover:not(:disabled){background:var(--green-dark)}
+  .enlace{display:none;padding:16px 20px;border-top:1px solid var(--line);background:var(--green-soft)}
+  .enlace.on{display:block}
+  .enlace b{display:block;font-size:13px;margin-bottom:8px;color:var(--green-dark)}
+  .enlace-fila{display:flex;gap:8px;flex-wrap:wrap}
+  .enlace-fila input{flex:1;min-width:200px;padding:10px 12px;border:1.5px solid #bfe6d6;border-radius:10px;font:inherit;font-size:13.5px;background:#fff;color:var(--ink)}
+  .enlace-fila .btn{padding:10px 14px;font-size:13.5px}
+  .btn-white{background:#fff;color:var(--ink);border:1.5px solid #bfe6d6}
+  .btn-white:hover{border-color:var(--green)}
+
+  /* Celular */
+  .previa{position:sticky;top:16px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .previa-tit{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .phone{
+    width:360px;height:720px;max-height:calc(100vh - 80px);border-radius:46px;padding:12px;
+    background:#0f2434;box-shadow:0 30px 60px rgba(15,36,52,.25),inset 0 0 0 2px #2b4458;position:relative;
+  }
+  .phone::before{content:"";position:absolute;top:20px;left:50%;transform:translateX(-50%);width:90px;height:22px;border-radius:999px;background:#0f2434;z-index:2}
+  .screen{width:100%;height:100%;border-radius:36px;overflow-y:auto;overflow-x:hidden;background:#fff;scrollbar-width:thin}
+  .screen .pa{padding-top:44px}
+  .phone .pc{inset:12px;border-radius:36px}
+
+  .solo-movil{display:none}
+  @media (max-width:1020px){
+    .zona{grid-template-columns:1fr}
+    .previa{position:static}
+    .solo-movil{display:flex}
+    .zona[data-vista=editar] .previa{display:none}
+    .zona[data-vista=previa] .panel{display:none}
+    .phone{width:min(360px,100%);height:680px}
+  }
+  @media (max-width:640px){
+    .topbar{padding:12px 16px}
+    main{padding:0 16px 36px}
+    .dos{grid-template-columns:1fr}
+    .item{width:180px}
+    .seccion{padding:16px}
+    .acciones{padding:14px 16px}
+    .acciones .estado{width:100%}
+  }
+  .vista-switch{gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:14px}
+  .vista-switch button{flex:1;padding:10px;border:0;border-radius:9px;background:none;font:inherit;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer}
+  .vista-switch button.on{background:var(--blue);color:#fff}
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="btn btn-ghost" href="inicio.html">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </a>
+    <div class="spacer"></div>
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 11.5h2l1-2 2 4 1-2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="name"><b>Conecta RH</b></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="encabezado">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="13" cy="4.5" r="2" stroke="currentColor" stroke-width="2"/><path d="M7 21l3-6 3 2v4M10 15l1-5 4 3 3-1M11 10l-3 1-2 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div>
+        <h1>Pausas Activas</h1>
+        <p>Crea la pausa, revisa cómo se ve en el celular y comparte el enlace con tu equipo.</p>
+      </div>
+    </div>
+
+    <section class="mis">
+      <div class="mis-top">
+        <h2>Mis pausas activas</h2>
+        <button class="btn btn-primary" id="btnNueva">+ Nueva</button>
+      </div>
+      <div class="lista" id="lista"></div>
+    </section>
+
+    <div class="vista-switch solo-movil" id="vistaSwitch">
+      <button data-v="editar" class="on">Editar</button>
+      <button data-v="previa">Vista previa</button>
+    </div>
+
+    <div class="zona" id="zona" data-vista="editar">
+      <!-- EDITOR -->
+      <section class="panel">
+        <div class="tabs" role="tablist">
+          <button class="tab on" data-s="contenido">Contenido</button>
+          <button class="tab" data-s="participacion">Participación</button>
+          <button class="tab" data-s="apariencia">Apariencia</button>
+        </div>
+
+        <div class="seccion on" id="s-contenido">
+          <p class="nota"><input type="color" class="mini" value="#1f6fd6" tabindex="-1" aria-hidden="true">Toca el círculo junto a cada texto para cambiar su color.</p>
+          <div class="campo">
+            <div class="lbl"><label for="fTitulo">Título</label><input type="color" class="mini" data-k="estilo.titulo" title="Color del título"></div>
+            <input type="text" id="fTitulo" data-k="titulo" maxlength="200" placeholder="Ej: Estiramiento de cuello y hombros">
+          </div>
+          <div class="campo">
+            <div class="lbl"><label for="fDesc">Descripción <span style="font-weight:500;color:var(--muted)">· opcional</span></label><input type="color" class="mini" data-k="estilo.descripcion" title="Color de la descripción"></div>
+            <textarea id="fDesc" data-k="descripcion" maxlength="600"></textarea>
+          </div>
+          <div class="campo">
+            <label for="fVideo">Link del video</label>
+            <input type="url" id="fVideo" data-k="video" placeholder="https://www.youtube.com/watch?v=...">
+            <div class="ayuda" id="videoAyuda">Acepta YouTube, Vimeo, Google Drive o un archivo .mp4.</div>
+          </div>
+
+          <h3>Pantalla de carga</h3>
+          <div class="campo">
+            <div class="lbl">
+              <label for="fCarga">Frase de bienvenida <span style="font-weight:500;color:var(--muted)">· opcional</span></label>
+              <button type="button" class="btn btn-ghost btn-carga" data-ver-carga>▶ Ver</button>
+            </div>
+            <input type="text" id="fCarga" data-k="textos.carga" maxlength="80" placeholder="Vacía = una de 15 frases al azar">
+            <div class="ayuda">Pon *asteriscos* en las palabras que quieres destacar con color. Ej: Es hora de una *Pausa Activa*. Debajo siempre aparece «SST &amp; RH».</div>
+          </div>
+        </div>
+
+        <div class="seccion" id="s-participacion">
+          <p class="nota"><input type="color" class="mini" value="#0d8a6a" tabindex="-1" aria-hidden="true">Toca el círculo junto a cada texto para cambiar su color.</p>
+          <h3>Encabezado</h3>
+          <div class="campo">
+            <div class="lbl"><label>Título del formulario</label><input type="color" class="mini" data-k="estilo.participacion" title="Color del título del formulario"></div>
+            <input type="text" data-k="textos.participacion" maxlength="80">
+          </div>
+
+          <h3>Datos del trabajador</h3>
+          <div class="dos">
+            <div class="campo">
+              <div class="lbl"><label>Texto para el nombre</label><input type="color" class="mini" data-k="estilo.nombre" title="Color"></div>
+              <input type="text" data-k="textos.nombre" maxlength="80">
+            </div>
+            <div class="campo">
+              <div class="lbl"><label>Texto para el cargo</label><input type="color" class="mini" data-k="estilo.cargo" title="Color"></div>
+              <input type="text" data-k="textos.cargo" maxlength="80">
+            </div>
+          </div>
+
+          <h3>Aporte a mi bienestar</h3>
+          <div class="campo">
+            <div class="lbl"><label>Pregunta</label><input type="color" class="mini" data-k="estilo.bienestar" title="Color"></div>
+            <input type="text" data-k="textos.bienestar" maxlength="120">
+          </div>
+          <div class="dos">
+            <div class="campo">
+              <div class="lbl"><label class="emo-label">👍 Opción sí</label><input type="color" class="mini" data-k="estilo.si" title="Color"></div>
+              <input type="text" data-k="textos.si" maxlength="40">
+            </div>
+            <div class="campo">
+              <div class="lbl"><label class="emo-label">😢 Opción no</label><input type="color" class="mini" data-k="estilo.no" title="Color"></div>
+              <input type="text" data-k="textos.no" maxlength="40">
+            </div>
+          </div>
+
+          <h3>Reto</h3>
+          <div class="campo">
+            <div class="lbl"><label>Nombre de la sección</label><input type="color" class="mini" data-k="estilo.reto" title="Color del recuadro del reto"></div>
+            <input type="text" data-k="textos.reto" maxlength="40">
+          </div>
+          <div class="campo">
+            <div class="lbl"><label>Pregunta sobre el video</label><input type="color" class="mini" data-k="estilo.pregunta" title="Color"></div>
+            <textarea data-k="textos.pregunta" maxlength="300" placeholder="Si la dejas vacía, el reto no aparece."></textarea>
+          </div>
+          <div class="campo"><label>Texto de ayuda en la respuesta</label><input type="text" data-k="textos.respuesta" maxlength="80"></div>
+
+          <h3>Envío</h3>
+          <div class="campo">
+            <div class="lbl">
+              <label>Texto del botón</label>
+              <div class="minis">
+                <input type="color" class="mini" data-k="estilo.boton" title="Color del botón">
+                <input type="color" class="mini" data-k="estilo.botonTexto" title="Color de las letras del botón">
+              </div>
+            </div>
+            <input type="text" data-k="textos.enviar" maxlength="40">
+          </div>
+          <h3>Pantalla de despedida</h3>
+          <div class="campo">
+            <div class="lbl"><label>Sello (con el check)</label><input type="color" class="mini" data-k="estilo.registrada" title="Color del check y el sello"></div>
+            <input type="text" data-k="textos.registrada" maxlength="40">
+          </div>
+          <div class="dos">
+            <div class="campo">
+              <div class="lbl"><label>Mensaje de agradecimiento</label><input type="color" class="mini" data-k="estilo.gracias" title="Color"></div>
+              <input type="text" data-k="textos.gracias" maxlength="80">
+            </div>
+            <div class="campo"><label>Texto secundario</label><input type="text" data-k="textos.graciasSub" maxlength="120"></div>
+          </div>
+          <button type="button" class="btn btn-ghost btn-carga" id="btnVerDespedida">▶ Ver despedida</button>
+        </div>
+
+        <div class="seccion" id="s-apariencia">
+          <h3>Combinaciones rápidas</h3>
+          <div class="presets" id="presets"></div>
+          <p class="ayuda" style="margin-top:0">Cambian todos los colores a la vez. Luego puedes ajustar cada texto desde su círculo de color.</p>
+          <h3>Colores generales</h3>
+          <div class="colores">
+            <label class="color"><input type="color" data-k="estilo.fondo"><span>Fondo 1<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.fondo2"><span>Fondo 2<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.tarjeta"><span>Tarjetas<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.acento"><span>Casillas y detalles<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.texto"><span>Texto escrito<small></small></span></label>
+          </div>
+          <p class="ayuda">El fondo es un degradado del Fondo 1 al Fondo 2. Usa el mismo color en ambos para un fondo plano.</p>
+        </div>
+
+        <div class="acciones">
+          <div class="estado">Estado: <span class="pill borrador" id="estadoPill">Nueva</span></div>
+          <button class="btn btn-ghost" id="btnGuardar">Guardar</button>
+          <button class="btn btn-green" id="btnPublicar">Publicar y obtener enlace</button>
+          <button class="btn btn-ghost" id="btnCerrar" hidden>Cerrar participación</button>
+        </div>
+
+        <div class="enlace" id="enlaceBox">
+          <b>Enlace para tu equipo</b>
+          <div class="enlace-fila">
+            <input id="enlace" readonly>
+            <button class="btn btn-primary" id="btnCopiar">Copiar</button>
+            <a class="btn btn-white" id="btnAbrir" target="_blank" rel="noopener">Abrir</a>
+            <a class="btn btn-white" id="btnWhats" target="_blank" rel="noopener">WhatsApp</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA PREVIA -->
+      <aside class="previa">
+        <div class="previa-tit">Así lo verá el trabajador</div>
+        <div class="phone" id="phone"><div class="screen" id="screen"></div></div>
+        <button type="button" class="btn btn-ghost btn-carga" data-ver-carga>▶ Ver pantalla de carga</button>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+<script type="module">
+  import { db } from "./js/firebase-config.js";
+  import { sessionReady } from "./js/auth-guard.js";
+  import { enlaceRespuesta } from "./js/tipos.js";
+  import { TIPO, DEFAULTS, normalizar, analizarVideo, montarPausaActiva } from "./js/pausa-activa-vista.js";
+  import { mostrarPantallaCarga } from "./js/pantalla-carga.js";
+  import {
+    collection, doc, getDoc, getDocs, addDoc, updateDoc, query, where, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const $ = (id) => document.getElementById(id);
+  const leer = (o, ruta) => ruta.split(".").reduce((x, k) => x?.[k], o);
+  function escribir(o, ruta, v) {
+    const ks = ruta.split("."); const ult = ks.pop();
+    ks.reduce((x, k) => (x[k] ??= {}), o)[ult] = v;
+  }
+
+  let toastTimer;
+  function toast(t) {
+    $("toast").textContent = t; $("toast").classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
+  }
+
+  // ---------- Pestañas ----------
+  document.querySelectorAll(".tab").forEach((t) => t.onclick = () => {
+    document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("on", x === t));
+    document.querySelectorAll(".seccion").forEach((s) => s.classList.toggle("on", s.id === "s-" + t.dataset.s));
+  });
+  $("vistaSwitch").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    $("zona").dataset.vista = b.dataset.v;
+    $("vistaSwitch").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+  };
+
+  // ---------- Estado del editor ----------
+  let id = null;
+  let estadoPub = null;         // borrador | activa | cerrada (null = nueva sin guardar)
+  let datos = normalizar(DEFAULTS);
+  let sucio = false;
+  const vista = montarPausaActiva($("screen"), datos, { modo: "preview" });
+
+  const campos = document.querySelectorAll("[data-k]");
+  function pintarCampos() {
+    campos.forEach((c) => { c.value = leer(datos, c.dataset.k) ?? ""; });
+    pintarColores();
+    pintarAyudaVideo();
+  }
+  function pintarColores() {
+    document.querySelectorAll(".color").forEach((l) => {
+      l.querySelector("small").textContent = l.querySelector("input").value.toUpperCase();
+    });
+  }
+  function pintarAyudaVideo() {
+    const v = analizarVideo(datos.video), a = $("videoAyuda");
+    if (!v) { a.className = "ayuda"; a.textContent = "Acepta YouTube, Vimeo, Google Drive o un archivo .mp4."; }
+    else if (v.tipo === "invalido") { a.className = "ayuda mal"; a.textContent = "Ese link no es válido. Cópialo completo, empezando por https://"; }
+    else if (v.tipo === "enlace") { a.className = "ayuda"; a.textContent = "No se puede incrustar: el trabajador verá un botón para abrir el video."; }
+    else { a.className = "ayuda ok"; a.textContent = "✓ Video de " + v.fuente + " detectado."; }
+  }
+  campos.forEach((c) => c.addEventListener("input", () => {
+    escribir(datos, c.dataset.k, c.value);
+    sucio = true;
+    vista.actualizar(datos);
+    if (c.type === "color") pintarColores();
+    if (c.dataset.k === "video") pintarAyudaVideo();
+  }));
+
+  // ---------- Combinaciones de color ----------
+  // a = color principal, b = color secundario; con ellos se colorea cada texto.
+  const PRESETS = [
+    { n: "Cielo",   fondo: "#eaf3fd", fondo2: "#e3f6ee", tarjeta: "#ffffff", texto: "#0f2434", a: "#1f6fd6", b: "#0d8a6a" },
+    { n: "Menta",   fondo: "#e3f6ee", fondo2: "#f3fbf7", tarjeta: "#ffffff", texto: "#0f2a24", a: "#0d8a6a", b: "#0f8fa8" },
+    { n: "Océano",  fondo: "#d8ecfb", fondo2: "#c9f0e4", tarjeta: "#ffffff", texto: "#0c2433", a: "#0f7fa0", b: "#1f6fd6" },
+    { n: "Blanco",  fondo: "#ffffff", fondo2: "#ffffff", tarjeta: "#f4f7fb", texto: "#0f2434", a: "#1f6fd6", b: "#12a07c" },
+    { n: "Lavanda", fondo: "#efeafd", fondo2: "#e6f1fd", tarjeta: "#ffffff", texto: "#1d1638", a: "#6a4fd1", b: "#1f6fd6" },
+    { n: "Durazno", fondo: "#fff1e6", fondo2: "#fdf7e3", tarjeta: "#ffffff", texto: "#3a1f12", a: "#d9622b", b: "#c2410c" },
+    { n: "Noche",   fondo: "#0f2434", fondo2: "#123a3a", tarjeta: "#18324a", texto: "#eaf3f8", a: "#5aa8ff", b: "#2fc69c" }
+  ];
+  const estiloDePreset = (p) => ({
+    fondo: p.fondo, fondo2: p.fondo2, tarjeta: p.tarjeta, texto: p.texto, acento: p.a,
+    titulo: p.a, descripcion: p.texto, participacion: p.b, nombre: p.a, cargo: p.a,
+    bienestar: p.b, si: "#12a07c", no: "#d9622b", reto: p.b, pregunta: p.texto,
+    boton: p.a, botonTexto: "#ffffff", registrada: "#12a07c", gracias: p.b
+  });
+  PRESETS.forEach((p) => {
+    const b = document.createElement("button");
+    b.className = "preset"; b.type = "button";
+    b.innerHTML = `<i style="background:linear-gradient(135deg,${p.fondo} 0 34%,${p.a} 34% 67%,${p.b} 67% 100%)"></i>`;
+    b.append(p.n);
+    b.onclick = () => {
+      datos.estilo = estiloDePreset(p); sucio = true;
+      pintarCampos(); vista.actualizar(datos);
+    };
+    $("presets").append(b);
+  });
+
+  // ---------- Pantallas de carga y despedida (vista previa) ----------
+  // En celular/tablet, si se está en "Editar", pasa a la vista previa para verlas.
+  function irAPrevia() {
+    if ($("zona").dataset.vista === "editar" && matchMedia("(max-width:1020px)").matches) {
+      $("vistaSwitch").querySelector('[data-v="previa"]').click();
+    }
+  }
+  $("btnVerDespedida").onclick = () => { irAPrevia(); vista.verDespedida(); };
+
+  let cargaEnCurso = false;
+  document.querySelectorAll("[data-ver-carga]").forEach((b) => b.onclick = async () => {
+    irAPrevia();
+    if (cargaEnCurso) return;
+    cargaEnCurso = true;
+    await mostrarPantallaCarga($("phone"), { tipo: TIPO, frase: datos.textos.carga, estilo: datos.estilo, fijo: false });
+    cargaEnCurso = false;
+  });
+
+  // ---------- Estado / enlace ----------
+  const NOMBRE_ESTADO = { borrador: "Borrador", activa: "Publicada", cerrada: "Cerrada" };
+  function pintarEstado() {
+    const p = $("estadoPill");
+    p.className = "pill " + (estadoPub || "borrador");
+    p.textContent = estadoPub ? NOMBRE_ESTADO[estadoPub] : "Nueva";
+    $("btnPublicar").hidden = estadoPub === "activa";
+    $("btnPublicar").textContent = estadoPub === "cerrada" ? "Reabrir participación" : "Publicar y obtener enlace";
+    $("btnCerrar").hidden = estadoPub !== "activa";
+    $("btnGuardar").textContent = estadoPub === "activa" ? "Guardar cambios" : "Guardar borrador";
+    const box = $("enlaceBox");
+    box.classList.toggle("on", estadoPub === "activa");
+    if (estadoPub === "activa") {
+      const url = enlaceRespuesta(id);
+      $("enlace").value = url;
+      $("btnAbrir").href = url;
+      $("btnWhats").href = "https://wa.me/?text=" + encodeURIComponent(`${datos.titulo}\n${url}`);
+    }
+  }
+  $("btnCopiar").onclick = async () => {
+    try { await navigator.clipboard.writeText($("enlace").value); }
+    catch { $("enlace").select(); document.execCommand("copy"); }
+    toast("Enlace copiado");
+  };
+
+  // ---------- Firestore ----------
+  const { uid } = await sessionReady;
+  let misPausas = [];
+
+  async function cargarLista() {
+    const snap = await getDocs(query(collection(db, "ediciones"), where("uid", "==", uid), where("tipo", "==", TIPO)));
+    misPausas = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => (b.creado?.toMillis?.() ?? Date.now()) - (a.creado?.toMillis?.() ?? Date.now()));
+    pintarLista();
+  }
+  function pintarLista() {
+    const lista = $("lista");
+    lista.replaceChildren();
+    for (const p of misPausas) {
+      const b = document.createElement("button");
+      b.className = "item" + (p.id === id ? " actual" : "");
+      const t = document.createElement("b"); t.textContent = p.titulo || "Sin título";
+      const s = document.createElement("small");
+      const pill = document.createElement("span");
+      pill.className = "pill " + (p.estado || "borrador");
+      pill.textContent = NOMBRE_ESTADO[p.estado] || "Borrador";
+      s.append(pill, " ", p.creado?.toDate ? p.creado.toDate().toLocaleDateString("es") : "");
+      b.append(t, s);
+      b.onclick = () => abrir(p.id);
+      lista.append(b);
+    }
+  }
+
+  function confirmarDescartar() {
+    return !sucio || confirm("Tienes cambios sin guardar. ¿Descartarlos?");
+  }
+
+  function cargarEnEditor(nuevoId, d) {
+    id = nuevoId;
+    estadoPub = d ? d.estado : null;
+    datos = normalizar(d || DEFAULTS);
+    sucio = false;
+    pintarCampos(); vista.actualizar(datos); pintarEstado(); pintarLista();
+    const url = new URL(location.href);
+    if (id) url.searchParams.set("id", id); else url.searchParams.delete("id");
+    history.replaceState(null, "", url);
+  }
+
+  async function abrir(nuevoId) {
+    if (nuevoId === id || !confirmarDescartar()) return;
+    try {
+      const snap = await getDoc(doc(db, "ediciones", nuevoId));
+      if (!snap.exists() || snap.data().uid !== uid || snap.data().tipo !== TIPO) throw new Error();
+      cargarEnEditor(nuevoId, snap.data());
+    } catch {
+      toast("No se pudo abrir esa pausa.");
+    }
+  }
+
+  $("btnNueva").onclick = () => { if (confirmarDescartar()) cargarEnEditor(null, null); };
+
+  async function guardar(nuevoEstado) {
+    const titulo = datos.titulo.trim();
+    if (!titulo) {
+      document.querySelector('.tab[data-s="contenido"]').click();
+      $("fTitulo").focus();
+      toast("Escribe un título para la pausa.");
+      return;
+    }
+    if (nuevoEstado === "activa" && !analizarVideo(datos.video)) {
+      if (!confirm("La pausa no tiene video. ¿Publicarla de todas formas?")) return;
+    }
+    const botones = [$("btnGuardar"), $("btnPublicar"), $("btnCerrar")];
+    botones.forEach((b) => b.disabled = true);
+    const cuerpo = {
+      titulo,
+      descripcion: datos.descripcion,
+      video: datos.video.trim(),
+      textos: datos.textos,
+      estilo: datos.estilo,
+      estado: nuevoEstado,
+      actualizado: serverTimestamp()
+    };
+    try {
+      if (!id) {
+        const ref = await addDoc(collection(db, "ediciones"), { ...cuerpo, uid, tipo: TIPO, creado: serverTimestamp() });
+        id = ref.id;
+      } else {
+        await updateDoc(doc(db, "ediciones", id), cuerpo);
+      }
+      estadoPub = nuevoEstado;
+      sucio = false;
+      cargarEnEditor(id, { ...cuerpo });
+      await cargarLista();
+      toast(nuevoEstado === "activa" ? "¡Publicada! Comparte el enlace." : nuevoEstado === "cerrada" ? "Participación cerrada." : "Guardado.");
+    } catch (e) {
+      console.error(e);
+      toast(e.code === "permission-denied" ? "Firebase rechazó el guardado (revisa las reglas)." : "No se pudo guardar. Revisa tu conexión.");
+    } finally {
+      botones.forEach((b) => b.disabled = false);
+    }
+  }
+
+  $("btnGuardar").onclick = () => guardar(estadoPub || "borrador");
+  $("btnPublicar").onclick = () => guardar("activa");
+  $("btnCerrar").onclick = () => {
+    if (confirm("Al cerrar, el enlace dejará de recibir respuestas. ¿Continuar?")) guardar("cerrada");
+  };
+
+  window.addEventListener("beforeunload", (e) => { if (sucio) { e.preventDefault(); e.returnValue = ""; } });
+
+  // Inicio: abre ?id= si viene en la URL, o una pausa nueva.
+  pintarCampos(); pintarEstado();
+  await cargarLista().catch((e) => { console.error(e); toast("No se pudo cargar tu lista de pausas."); });
+  const pedido = new URLSearchParams(location.search).get("id");
+  if (pedido) await abrir(pedido);
+</script>
+</body>
+</html>

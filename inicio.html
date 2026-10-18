@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta RH · Inicio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<script type="module">
+  // Se carga primero para ocultar la página hasta validar la sesión.
+  import "./js/auth-guard.js";
+</script>
+<style>
+  body{
+    background:
+      radial-gradient(ellipse 60% 40% at 100% 0%, #e3eefc 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 0% 100%, #e3f5ee 0%, transparent 60%),
+      var(--bg);
+    min-height:100vh;
+  }
+  .topbar{
+    max-width:1180px;margin:0 auto;padding:18px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+  }
+  .topbar .btn{padding:9px 14px;font-size:14px}
+  main{max-width:1180px;margin:0 auto;padding:4px 24px 48px;display:flex;flex-direction:column;gap:22px}
+
+  /* ---------- Franja informativa ---------- */
+  .franja{
+    position:relative;overflow:hidden;border-radius:22px;color:#fff;
+    background:var(--grad);padding:26px 28px 22px;box-shadow:0 18px 40px rgba(20,110,170,.22);
+  }
+  .franja::after{
+    content:"";position:absolute;right:-80px;top:-120px;width:340px;height:340px;border-radius:50%;
+    background:rgba(255,255,255,.10);pointer-events:none;
+  }
+  .franja-top{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .saludo small{display:block;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+  .saludo h1{margin:4px 0 2px;font-size:clamp(24px,3vw,32px);letter-spacing:-.02em;font-weight:800}
+  .saludo p{margin:0;font-size:14px;opacity:.9}
+  .reloj{text-align:right}
+  .reloj .hora{font-size:clamp(24px,3vw,32px);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .reloj .fecha{font-size:14px;opacity:.92}
+
+  .stats{
+    position:relative;z-index:1;margin-top:22px;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+  }
+  .stat{
+    display:flex;align-items:center;gap:12px;padding:14px;border-radius:16px;
+    background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);
+    backdrop-filter:blur(4px);
+  }
+  .stat i{
+    width:42px;height:42px;border-radius:12px;background:#fff;display:grid;place-items:center;flex:none;
+  }
+  .stat i svg{width:21px;height:21px}
+  .stat:nth-child(odd) i{color:var(--blue)}
+  .stat:nth-child(even) i{color:var(--green-dark)}
+  .stat b{display:block;font-size:24px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+  .stat span{display:block;font-size:12.5px;opacity:.92;margin-top:4px;line-height:1.3}
+
+  /* ---------- Recuadros de acción ---------- */
+  .acciones{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .accion{
+    display:flex;flex-direction:column;gap:14px;text-align:left;cursor:pointer;
+    background:var(--surface);border:1px solid var(--line);border-radius:22px;
+    padding:28px;min-height:220px;box-shadow:var(--shadow);color:var(--ink);
+    transition:transform .15s,box-shadow .15s,border-color .15s;
+  }
+  .accion:hover{transform:translateY(-3px);box-shadow:0 20px 44px rgba(15,36,52,.12)}
+  .accion:focus-visible{outline:3px solid rgba(31,111,214,.35);outline-offset:3px}
+  .accion .ico{width:58px;height:58px;border-radius:16px;display:grid;place-items:center}
+  .accion .ico svg{width:28px;height:28px}
+  .accion h2{margin:0;font-size:22px;letter-spacing:-.015em}
+  .accion p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.55;max-width:46ch}
+  .accion .ir{margin-top:auto;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .accion .ir svg{width:16px;height:16px}
+  .nueva .ico{background:var(--blue-soft);color:var(--blue)}
+  .nueva .ir{color:var(--blue)}
+  .nueva:hover{border-color:#c7dbf6}
+  .consulta .ico{background:var(--green-soft);color:var(--green-dark)}
+  .consulta .ir{color:var(--green-dark)}
+  .consulta:hover{border-color:#bfe6d6}
+
+  /* ---------- Menú de pausas ---------- */
+  .modal{
+    position:fixed;inset:0;z-index:40;background:rgba(15,36,52,.45);backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;padding:16px;
+  }
+  .modal-caja{
+    background:var(--surface);border-radius:22px;width:100%;max-width:640px;max-height:calc(100vh - 32px);overflow-y:auto;
+    padding:24px;box-shadow:0 30px 70px rgba(15,36,52,.25);animation:subir .2s ease-out;
+  }
+  @keyframes subir{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .modal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+  .modal-top h2{margin:0;font-size:22px;letter-spacing:-.015em}
+  .modal-top p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .cerrar{width:36px;height:36px;border-radius:50%;border:0;background:var(--bg);font-size:22px;line-height:1;color:var(--muted);cursor:pointer;flex:none}
+  .cerrar:hover{background:var(--blue-soft);color:var(--blue)}
+  .opciones{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .opcion{
+    display:flex;align-items:flex-start;gap:12px;text-align:left;padding:16px;border-radius:16px;cursor:pointer;
+    border:1.5px solid var(--line);background:#fff;font:inherit;color:var(--ink);
+    transition:border-color .15s,transform .12s,box-shadow .15s;
+  }
+  .opcion:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .opcion i{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex:none}
+  .opcion i svg{width:22px;height:22px}
+  .opcion.blue i{background:var(--blue-soft);color:var(--blue)}
+  .opcion.blue:hover{border-color:#c7dbf6}
+  .opcion.green i{background:var(--green-soft);color:var(--green-dark)}
+  .opcion.green:hover{border-color:#bfe6d6}
+  .opcion b{display:block;font-size:15px;margin-bottom:3px}
+  .opcion span{display:block;font-size:13px;color:var(--muted);line-height:1.4}
+  .opcion.pronto{opacity:.6}
+
+  @media (max-width:900px){
+    .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:680px){
+    .topbar{padding:14px 16px}
+    main{padding:4px 16px 36px}
+    .franja{padding:22px 18px 18px}
+    .reloj{text-align:left}
+    .acciones{grid-template-columns:1fr}
+    .accion{min-height:0;padding:22px}
+    .topbar .salir-txt{display:none}
+    .opciones{grid-template-columns:1fr}
+    .modal-caja{padding:20px 16px}
+  }
+  @media (max-width:380px){
+    .stats{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 11.5h2l1-2 2 4 1-2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="name"><b>Conecta RH</b><span>Bienestar y Seguridad en el Trabajo</span></div>
+    </div>
+    <button class="btn btn-ghost" id="btnSalir" title="Cerrar sesión">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l-5-5 5-5M5 12h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="salir-txt">Cerrar sesión</span>
+    </button>
+  </header>
+
+  <main>
+    <!-- Franja informativa -->
+    <section class="franja" aria-label="Franja informativa">
+      <div class="franja-top">
+        <div class="saludo">
+          <small>Franja informativa</small>
+          <h1>Hola, <span id="nombre">…</span></h1>
+          <p id="detalle"></p>
+        </div>
+        <div class="reloj">
+          <div class="hora" id="hora">--:--</div>
+          <div class="fecha" id="fecha"></div>
+        </div>
+      </div>
+
+      <!-- Se llena desde js/tipos.js -->
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <!-- Recuadros principales -->
+    <section class="acciones">
+      <button class="accion nueva" id="btnNueva">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <h2>+ Pausas</h2>
+        <p>Crea Pausas Activas, Pausas Motivacionales, Campañas Informativas o Sugerencias de Aprendizaje y compártelas con tu equipo mediante un enlace.</p>
+        <span class="ir">Comenzar <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
+      <button class="accion consulta" id="btnConsulta">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+        <h2>Consulta de Registros</h2>
+        <p>Revisa quién participó, cómo lo hizo y qué respondió en cada una de tus ediciones.</p>
+        <span class="ir">Consultar <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </button>
+    </section>
+  </main>
+
+  <!-- Menú de "+ Pausas" -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-caja" role="dialog" aria-modal="true" aria-labelledby="modalTit">
+      <div class="modal-top">
+        <div>
+          <h2 id="modalTit">¿Qué quieres crear?</h2>
+          <p>Cada tipo tiene su propio editor.</p>
+        </div>
+        <button class="cerrar" id="modalCerrar" aria-label="Cerrar">&times;</button>
+      </div>
+      <div class="opciones" id="opciones"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script type="module">
+  import { db } from "./js/firebase-config.js";
+  import { sessionReady, cerrarSesion } from "./js/auth-guard.js";
+  import { TIPOS } from "./js/tipos.js";
+  import {
+    collection, query, where, getCountFromServer
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const $ = (id) => document.getElementById(id);
+
+  // Reloj: día y hora en vivo
+  const fmtHora = new Intl.DateTimeFormat("es", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const fmtFecha = new Intl.DateTimeFormat("es", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  function tic(){
+    const now = new Date();
+    $("hora").textContent = fmtHora.format(now);
+    const f = fmtFecha.format(now);
+    $("fecha").textContent = f.charAt(0).toUpperCase() + f.slice(1);
+  }
+  tic(); setInterval(tic, 1000);
+
+  // Avisos
+  let toastTimer;
+  function toast(texto){
+    const t = $("toast");
+    t.textContent = texto; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2600);
+  }
+
+  // Franja: un contador por tipo de pausa
+  for (const t of TIPOS) {
+    const s = document.createElement("div");
+    s.className = "stat";
+    s.innerHTML = `<i>${t.icono}</i><div><b>–</b><span></span></div>`;
+    s.querySelector("span").textContent = t.nombre;
+    s.dataset.tipo = t.tipo;
+    $("stats").append(s);
+  }
+
+  // Menú "+ Pausas"
+  for (const t of TIPOS) {
+    const b = document.createElement("button");
+    b.className = "opcion " + t.color;
+    b.innerHTML = `<i>${t.icono}</i><div><b></b><span></span></div>`;
+    b.querySelector("b").textContent = t.nombre;
+    b.querySelector("span").textContent = t.archivo ? t.desc : "Próximamente";
+    if (!t.archivo) b.classList.add("pronto");
+    b.onclick = () => t.archivo ? location.href = t.archivo : toast(t.nombre + ": lo construimos más adelante.");
+    $("opciones").append(b);
+  }
+  const modal = $("modal");
+  const abrirModal = () => { modal.hidden = false; $("opciones").querySelector("button").focus(); };
+  const cerrarModal = () => { modal.hidden = true; };
+  $("modalCerrar").onclick = cerrarModal;
+  modal.onclick = (e) => { if (e.target === modal) cerrarModal(); };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") cerrarModal(); });
+
+  $("btnSalir").onclick = cerrarSesion;
+  $("btnNueva").onclick = abrirModal;
+  $("btnConsulta").onclick = () => toast("Consulta de Registros: lo construimos en el siguiente paso.");
+
+  const { uid, perfil } = await sessionReady;
+  $("nombre").textContent = perfil.nombre;
+  $("detalle").textContent = [perfil.cargo, perfil.empresa].filter(Boolean).join(" · ") || perfil.email;
+
+  // Cuántas pausas de cada tipo ha creado este usuario.
+  await Promise.all([...$("stats").children].map(async (s) => {
+    const q = query(collection(db, "ediciones"), where("uid", "==", uid), where("tipo", "==", s.dataset.tipo));
+    try { s.querySelector("b").textContent = (await getCountFromServer(q)).data().count; }
+    catch (e) { console.warn("No se pudo contar", s.dataset.tipo, e); }
+  }));
+</script>
+</body>
+</html>

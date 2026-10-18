@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta RH · Ingreso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<style>
+  body{
+    min-height:100vh;display:flex;
+    background:
+      radial-gradient(ellipse 70% 55% at 0% 0%, #e3eefc 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 100% 100%, #e0f4ec 0%, transparent 60%),
+      var(--bg);
+  }
+  .wrap{
+    width:100%;max-width:1180px;margin:0 auto;
+    display:grid;grid-template-columns:1.1fr .9fr;align-items:center;
+    min-height:100vh;
+  }
+
+  /* ---------- Izquierda: resumen y objetivo ---------- */
+  .hero{padding:clamp(28px,5vw,64px);display:flex;flex-direction:column;gap:24px}
+  .eyebrow{
+    align-self:flex-start;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--green-dark);background:var(--green-soft);padding:6px 12px;border-radius:999px;
+  }
+  .hero h1{font-size:clamp(32px,4.6vw,52px);line-height:1.06;margin:0;letter-spacing:-.025em;font-weight:800}
+  .hero h1 .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{font-size:clamp(15px,1.5vw,17px);line-height:1.65;color:var(--muted);max-width:54ch;margin:0}
+  .lead b{color:var(--ink);font-weight:600}
+
+  .objetivo{
+    background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--green);
+    border-radius:14px;padding:16px 18px;max-width:54ch;box-shadow:var(--shadow);
+  }
+  .objetivo h3{margin:0 0 6px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--green-dark)}
+  .objetivo p{margin:0;font-size:14.5px;line-height:1.6;color:var(--ink)}
+
+  .features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 22px;max-width:54ch}
+  .feature{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--muted);font-weight:500}
+  .feature i{
+    width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;
+    background:var(--blue-soft);color:var(--blue);
+  }
+  .feature:nth-child(even) i{background:var(--green-soft);color:var(--green-dark)}
+  .feature svg{width:16px;height:16px}
+
+  /* ---------- Derecha: formulario ---------- */
+  .formside{display:flex;justify-content:center;padding:clamp(20px,4vw,56px)}
+  .card{
+    width:100%;max-width:420px;background:var(--surface);border:1px solid var(--line);
+    border-radius:22px;padding:clamp(24px,3.5vw,36px);box-shadow:0 24px 60px rgba(15,36,52,.10);
+  }
+  .card h2{font-size:26px;margin:0 0 6px;letter-spacing:-.015em}
+  .sub{font-size:14px;color:var(--muted);margin:0 0 22px;line-height:1.5}
+  .field{margin-bottom:14px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  label{display:block;font-size:12.5px;font-weight:700;color:var(--ink);margin:0 0 6px}
+  .hint{font-weight:500;color:var(--muted)}
+  input{
+    width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;
+    font-size:15px;font-family:inherit;background:#fbfdff;color:var(--ink);
+    transition:border-color .15s,box-shadow .15s;
+  }
+  input::placeholder{color:#9aabb9}
+  input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(31,111,214,.12);background:#fff}
+  .card .btn-primary{width:100%;margin-top:6px}
+  .switch{margin-top:18px;font-size:14px;color:var(--muted);text-align:center}
+  .switch a,.link{color:var(--blue);font-weight:700;cursor:pointer;text-decoration:none}
+  .switch a:hover,.link:hover{text-decoration:underline}
+  .forgot{display:block;text-align:right;font-size:13px;margin:-4px 0 10px}
+
+  @media (max-width:880px){
+    .wrap{grid-template-columns:1fr;max-width:540px;min-height:auto}
+    .hero{padding:32px 16px 8px;gap:18px}
+    .features{display:none}
+    .formside{padding:16px 16px 36px}
+  }
+  @media (max-width:420px){
+    .row{grid-template-columns:1fr;gap:0}
+    .card{padding:22px 18px;border-radius:18px}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- IZQUIERDA: qué hace la plataforma -->
+    <section class="hero">
+      <div class="brand">
+        <div class="mark">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 11.5h2l1-2 2 4 1-2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="name"><b>Conecta RH</b><span>Bienestar y Seguridad en el Trabajo</span></div>
+      </div>
+
+      <div class="eyebrow">Recursos Humanos conectado</div>
+      <h1>Tu equipo, más cerca con un solo <span class="hl">enlace</span>.</h1>
+
+      <p class="lead">
+        <b>Conecta RH</b> permite a Recursos Humanos crear y enviar actividades, mensajes
+        de motivación, encuestas y un buzón de sugerencias a los colaboradores mediante un
+        enlace. Cada participación queda registrada: <b>quién</b> lo hizo, <b>cómo</b> y <b>qué</b> hizo.
+      </p>
+
+      <div class="objetivo">
+        <h3>Objetivo</h3>
+        <p>Facilitar la comunicación y el bienestar laboral, centralizando en un solo lugar
+        las acciones de Recursos Humanos y la evidencia de participación de cada colaborador.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature"><i><svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></i>Actividades</div>
+        <div class="feature"><i><svg viewBox="0 0 24 24" fill="none"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9L12 3Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></i>Motivaciones</div>
+        <div class="feature"><i><svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></i>Encuestas</div>
+        <div class="feature"><i><svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v10H8l-4 4V6Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></i>Buzón de sugerencias</div>
+      </div>
+    </section>
+
+    <!-- DERECHA: formulario -->
+    <section class="formside">
+      <div class="card">
+        <div id="msg" class="msg"></div>
+
+        <!-- Iniciar sesión -->
+        <div id="viewLogin">
+          <h2>Inicia sesión</h2>
+          <p class="sub">Entra para gestionar tus envíos y consultar los registros.</p>
+          <div class="field">
+            <label for="lEmail">Correo electrónico</label>
+            <input id="lEmail" type="email" autocomplete="email" placeholder="talento@empresa.com">
+          </div>
+          <div class="field">
+            <label for="lPass">Contraseña</label>
+            <input id="lPass" type="password" autocomplete="current-password" placeholder="••••••••">
+          </div>
+          <a class="link forgot" id="toReset">¿Olvidaste tu contraseña?</a>
+          <button class="btn btn-primary" id="btnLogin">
+            Entrar
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="switch">¿Primera vez? <a id="toReg">Crea una cuenta</a></div>
+        </div>
+
+        <!-- Registro -->
+        <div id="viewReg" hidden>
+          <h2>Crear cuenta</h2>
+          <p class="sub">Tus datos quedan guardados de forma segura en tu perfil.</p>
+          <div class="field">
+            <label for="rNombre">Nombre completo</label>
+            <input id="rNombre" type="text" autocomplete="name" placeholder="Laura Martínez">
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="rEmpresa">Empresa <span class="hint">· opcional</span></label>
+              <input id="rEmpresa" type="text" autocomplete="organization" placeholder="Mi empresa S.A.S.">
+            </div>
+            <div class="field">
+              <label for="rCargo">Cargo <span class="hint">· opcional</span></label>
+              <input id="rCargo" type="text" autocomplete="organization-title" placeholder="Analista de RH">
+            </div>
+          </div>
+          <div class="field">
+            <label for="rEmail">Correo electrónico</label>
+            <input id="rEmail" type="email" autocomplete="email" placeholder="talento@empresa.com">
+          </div>
+          <div class="field">
+            <label for="rPass">Contraseña <span class="hint">· mínimo 6 caracteres</span></label>
+            <input id="rPass" type="password" autocomplete="new-password" placeholder="••••••••">
+          </div>
+          <button class="btn btn-primary" id="btnReg">
+            Crear cuenta
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="switch">¿Ya tienes cuenta? <a id="toLogin">Inicia sesión</a></div>
+        </div>
+
+        <!-- Recuperar contraseña -->
+        <div id="viewReset" hidden>
+          <h2>Recuperar contraseña</h2>
+          <p class="sub">Te enviaremos un enlace a tu correo para crear una nueva.</p>
+          <div class="field">
+            <label for="pEmail">Correo electrónico</label>
+            <input id="pEmail" type="email" autocomplete="email" placeholder="talento@empresa.com">
+          </div>
+          <button class="btn btn-primary" id="btnReset">Enviar enlace</button>
+          <div class="switch"><a id="resetBack">Volver a iniciar sesión</a></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script type="module">
+  import { auth, configPendiente } from "./js/firebase-config.js";
+  import { asegurarPerfil } from "./js/perfil.js";
+  import {
+    createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
+    updateProfile, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const DESTINO = "inicio.html";
+  const $ = (id) => document.getElementById(id);
+  const msg = $("msg");
+  function showMsg(text, tipo){ msg.textContent = text; msg.className = "msg " + tipo; }
+  function clearMsg(){ msg.className = "msg"; msg.textContent = ""; }
+
+  function mostrar(vista){
+    clearMsg();
+    for (const v of ["viewLogin","viewReg","viewReset"]) $(v).hidden = v !== vista;
+  }
+  $("toReg").onclick = () => mostrar("viewReg");
+  $("toLogin").onclick = () => mostrar("viewLogin");
+  $("toReset").onclick = () => { mostrar("viewReset"); $("pEmail").value = $("lEmail").value; };
+  $("resetBack").onclick = () => mostrar("viewLogin");
+
+  if (configPendiente) {
+    showMsg("Falta configurar Firebase: pega los datos de tu proyecto en js/firebase-config.js.", "err");
+  }
+  if (new URLSearchParams(location.search).get("motivo") === "sin-perfil") {
+    showMsg("No pudimos cargar tu perfil. Intenta de nuevo o contacta al administrador.", "err");
+  }
+
+  function errorLegible(code){
+    const m = {
+      "auth/invalid-email":"El correo no es válido.",
+      "auth/missing-password":"Escribe tu contraseña.",
+      "auth/invalid-credential":"Correo o contraseña incorrectos.",
+      "auth/wrong-password":"Correo o contraseña incorrectos.",
+      "auth/user-not-found":"No existe una cuenta con ese correo.",
+      "auth/email-already-in-use":"Ese correo ya está registrado.",
+      "auth/weak-password":"La contraseña debe tener al menos 6 caracteres.",
+      "auth/too-many-requests":"Demasiados intentos. Espera un momento e intenta de nuevo.",
+      "auth/network-request-failed":"Sin conexión. Revisa tu internet.",
+      "auth/api-key-not-valid.-please-pass-a-valid-api-key.":"Firebase no está configurado (revisa js/firebase-config.js).",
+      "permission-denied":"Las reglas de Firebase rechazaron la operación."
+    };
+    return m[code] || "Ocurrió un error. Intenta de nuevo.";
+  }
+
+  // Mientras se registra no redirigimos automáticamente: primero hay que guardar el perfil.
+  let ocupado = false;
+
+  async function conBoton(btn, fn){
+    clearMsg(); btn.disabled = true; ocupado = true;
+    try { await fn(); }
+    catch (e) { showMsg(errorLegible(e.code), "err"); }
+    finally { btn.disabled = false; ocupado = false; }
+  }
+
+  $("btnLogin").onclick = () => conBoton($("btnLogin"), async () => {
+    const email = $("lEmail").value.trim();
+    const pass = $("lPass").value;
+    if (!email || !pass){ showMsg("Completa correo y contraseña.", "err"); return; }
+    const cred = await signInWithEmailAndPassword(auth, email, pass);
+    await asegurarPerfil(cred.user);
+    location.replace(DESTINO);
+  });
+
+  $("btnReg").onclick = () => conBoton($("btnReg"), async () => {
+    const nombre = $("rNombre").value.trim();
+    const empresa = $("rEmpresa").value.trim();
+    const cargo = $("rCargo").value.trim();
+    const email = $("rEmail").value.trim();
+    const pass = $("rPass").value;
+    if (!nombre || !email || !pass){ showMsg("Nombre, correo y contraseña son obligatorios.", "err"); return; }
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    try {
+      await updateProfile(cred.user, { displayName: nombre });
+      await asegurarPerfil(cred.user, { nombre, empresa, cargo });
+    } catch (e) {
+      await signOut(auth).catch(() => {});
+      throw e;
+    }
+    location.replace(DESTINO);
+  });
+
+  $("btnReset").onclick = () => conBoton($("btnReset"), async () => {
+    const email = $("pEmail").value.trim();
+    if (!email){ showMsg("Escribe tu correo.", "err"); return; }
+    await sendPasswordResetEmail(auth, email);
+    showMsg("Si el correo está registrado, recibirás un enlace para restablecer tu contraseña.", "info");
+  });
+
+  // Enter envía el formulario visible
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    if (!$("viewLogin").hidden) $("btnLogin").click();
+    else if (!$("viewReg").hidden) $("btnReg").click();
+    else $("btnReset").click();
+  });
+
+  // Si ya hay sesión activa, pasa directo al inicio.
+  onAuthStateChanged(auth, (user) => { if (user && !ocupado) location.replace(DESTINO); });
+</script>
+</body>
+</html>
