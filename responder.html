@@ -5,9 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Conecta RH</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/pausa-activa.css">
+<link rel="stylesheet" href="css/pausa-motivacional.css">
+<link rel="stylesheet" href="css/campana-informativa.css">
+<link rel="stylesheet" href="css/sugerencia.css">
+<link rel="stylesheet" href="css/media.css">
 <link rel="stylesheet" href="css/pantalla-carga.css">
+<link rel="stylesheet" href="css/firma.css">
 <style>
   html,body{margin:0;background:#eaf3fd}
   body.bloqueado{overflow:hidden}
@@ -15,6 +20,11 @@
   .cargando i{width:38px;height:38px;border-radius:50%;border:4px solid #cfe0f7;border-top-color:#1f6fd6;animation:girar .8s linear infinite}
   @keyframes girar{to{transform:rotate(360deg)}}
   [hidden]{display:none!important}
+  .pa-cuenta{
+    margin-top:18px;display:inline-block;padding:10px 18px;border-radius:999px;
+    font-family:'Fredoka','Nunito',sans-serif;font-weight:600;font-size:18px;color:#fff;
+    background:linear-gradient(120deg,#1f6fd6,#12a07c);box-shadow:0 8px 20px rgba(31,111,214,.25);
+  }
 </style>
 </head>
 <body>
@@ -23,9 +33,18 @@
 
 <script type="module">
   import { db } from "./js/firebase-config.js";
+  import { estadoHorario, fechaLarga, restante, pintarLimite } from "./js/horario.js";
   import {
     doc, getDoc, addDoc, collection, serverTimestamp
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // Módulo de vista de cada tipo de pausa (cada uno exporta montar y normalizar).
+  const VISTAS = {
+    pausa_activa: "./js/pausa-activa-vista.js",
+    pausa_motivacional: "./js/pausa-motivacional-vista.js",
+    campana_informativa: "./js/campana-informativa-vista.js",
+    sugerencia_aprendizaje: "./js/sugerencia-vista.js"
+  };
 
   const app = document.getElementById("app");
   const id = new URLSearchParams(location.search).get("e");
@@ -40,7 +59,25 @@
   const noDisponible = () => aviso("🔒", "Este enlace no está disponible",
     "Puede que la actividad haya terminado o que el enlace esté incompleto. Consulta con Recursos Humanos.");
 
-  // "Cómo" participó: datos básicos del dispositivo, sin nada sensible.
+  // Aún no abre: cuenta regresiva y, al llegar la hora, se recarga sola.
+  function avisoPronto(ini) {
+    aviso("⏳", "Esta pausa abre pronto", `Abre el ${fechaLarga(ini).replace(/^./, (c) => c.toLowerCase())}.`);
+    const cuenta = document.createElement("div");
+    cuenta.className = "pa-cuenta";
+    app.querySelector(".pa-aviso").append(cuenta);
+    const tic = () => {
+      const falta = ini - new Date();
+      if (falta <= 0) { location.reload(); return; }
+      cuenta.textContent = "Faltan " + restante(falta);
+    };
+    tic();
+    setInterval(tic, 15000);
+  }
+
+  // Momento en que la pausa queda visible (al terminar la pantalla de carga).
+  let inicioPausa = Date.now();
+
+  // "Cómo" participó: datos básicos del dispositivo y el tiempo dentro de la pausa.
   function medio() {
     const ua = navigator.userAgent;
     return {
@@ -48,7 +85,8 @@
       dispositivo: /Mobi|Android|iPhone|iPad/i.test(ua) ? "móvil" : "computador",
       navegador: ua.slice(0, 300),
       idioma: navigator.language || "",
-      pantalla: `${screen.width}x${screen.height}`
+      pantalla: `${screen.width}x${screen.height}`,
+      duracionSeg: Math.round((Date.now() - inicioPausa) / 1000)
     };
   }
 
@@ -67,44 +105,61 @@
 
     document.title = ed.titulo || "Conecta RH";
 
-    if (ed.tipo === "pausa_activa") {
-      const [{ montarPausaActiva, normalizar }, { mostrarPantallaCarga }] = await Promise.all([
-        import("./js/pausa-activa-vista.js"),
-        import("./js/pantalla-carga.js")
-      ]);
-      const datos = normalizar(ed);
-      document.body.style.background = datos.estilo.fondo;
-
-      // La pausa se monta debajo (así el video va cargando) y encima va la pantalla de carga.
-      document.body.classList.add("bloqueado");
-      mostrarPantallaCarga(document.body, { tipo: ed.tipo, frase: datos.textos.carga, estilo: datos.estilo })
-        .then(() => document.body.classList.remove("bloqueado"));
-
-      montarPausaActiva(app, ed, {
-        modo: "real",
-        pagina: true,
-        onEnviar: async (r) => {
-          try {
-            await addDoc(collection(db, "registros"), {
-              edicionId: id,
-              propietario: ed.uid,
-              tipo: ed.tipo,
-              participante: { nombre: r.nombre, cargo: r.cargo },
-              contenido: { bienestar: r.bienestar, pregunta: r.pregunta, respuesta: r.respuesta },
-              medio: medio(),
-              creado: serverTimestamp()
-            });
-          } catch (e) {
-            throw new Error(e.code === "permission-denied"
-              ? "Esta actividad ya no recibe respuestas."
-              : "No se pudo enviar. Revisa tu conexión e intenta de nuevo.");
-          }
-        }
-      });
-      return;
+    // Horario: antes de abrir o después de cerrar no se muestra la pausa.
+    const h = estadoHorario(ed.horario);
+    if (h.estado === "pronto") return avisoPronto(h.ini);
+    if (h.estado === "cerrada") {
+      return aviso("⏰", "Esta pausa ya cerró",
+        `Estuvo disponible hasta el ${fechaLarga(h.fin).replace(/^./, (c) => c.toLowerCase())}. ¡Te esperamos en la próxima!`);
     }
 
-    aviso("🛠️", "Muy pronto", "Este tipo de actividad aún no está disponible.");
+    const vistaJs = VISTAS[ed.tipo];
+    if (!vistaJs) return aviso("🛠️", "Muy pronto", "Este tipo de actividad aún no está disponible.");
+
+    const [{ montar, normalizar }, { mostrarPantallaCarga }] = await Promise.all([
+      import(vistaJs),
+      import("./js/pantalla-carga.js")
+    ]);
+    const datos = normalizar(ed);
+    document.body.style.background = datos.estilo.fondo;
+
+    // La pausa se monta debajo (así el contenido va cargando) y encima va la pantalla de carga,
+    // salvo que RH la haya desactivado.
+    if (datos.visible?.carga !== false) {
+      document.body.classList.add("bloqueado");
+      mostrarPantallaCarga(document.body, { tipo: ed.tipo, frase: datos.textos.carga, estilo: datos.estilo })
+        .then(() => { document.body.classList.remove("bloqueado"); inicioPausa = Date.now(); });
+    }
+
+    montar(app, ed, {
+      modo: "real",
+      pagina: true,
+      // Cada vista entrega { nombre, cargo, contenido } (contenido = "qué hizo").
+      onEnviar: async (r) => {
+        try {
+          await addDoc(collection(db, "registros"), {
+            edicionId: id,
+            propietario: ed.uid,
+            tipo: ed.tipo,
+            participante: { nombre: r.nombre, cargo: r.cargo },
+            contenido: r.contenido,
+            medio: medio(),
+            creado: serverTimestamp()
+          });
+        } catch (e) {
+          throw new Error(e.code === "permission-denied"
+            ? "Esta actividad ya no recibe respuestas."
+            : "No se pudo enviar. Revisa tu conexión e intenta de nuevo.");
+        }
+      }
+    });
+
+    // "⏰ Disponible hasta…" arriba de la pausa, al día cada 30 s.
+    if (ed.horario?.activo && h.fin) {
+      const pa = app.querySelector(".pa");
+      pintarLimite(pa, ed.horario);
+      setInterval(() => pintarLimite(pa, ed.horario), 30000);
+    }
   }
 
   iniciar();

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta RH · Consulta de Registros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="css/registros.css">
+<script type="module">import "./js/auth-guard.js";</script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="btn btn-ghost" href="inicio.html">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </a>
+    <div class="spacer"></div>
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 11.5h2l1-2 2 4 1-2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="name"><b>Conecta RH</b></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="encabezado">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2.2"/><path d="M16 16l4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></div>
+      <div>
+        <h1>Consulta de Registros</h1>
+        <p>Quién participó en cada pausa, cuándo, cuánto se demoró y qué respondió.</p>
+      </div>
+    </div>
+
+    <section class="filtros">
+      <select id="selPausa" aria-label="Pausa">
+        <option value="">Todas las pausas</option>
+      </select>
+      <div class="rangos" id="rangos" role="group" aria-label="Periodo">
+        <button data-r="7">7 días</button>
+        <button data-r="30">30 días</button>
+        <button data-r="todo" class="on">Todo</button>
+      </div>
+      <div class="info-pausa" id="infoPausa"></div>
+    </section>
+
+    <div id="contenido"><div class="cargando"><i></i></div></div>
+  </main>
+
+  <template id="plantilla">
+    <section class="kpis">
+      <div class="kpi principal"><span>Participaciones</span><b id="kTotal">0</b><small id="kTotalSub"></small></div>
+      <div class="kpi"><span id="kBienLbl">Aportó a su bienestar</span><b id="kBien">–</b><small id="kBienSub"></small></div>
+      <div class="kpi"><span>Tiempo típico en la pausa</span><b id="kDur">–</b><small>Mediana, desde que abre hasta que envía</small></div>
+      <div class="kpi"><span>Respuesta tras publicar</span><b id="kResp">–</b><small>Mediana desde la publicación</small></div>
+      <div class="kpi"><span>Hora de más participación</span><b id="kPico">–</b><small id="kPicoSub"></small></div>
+    </section>
+
+    <section class="graficos">
+      <article class="tarjeta ancha">
+        <h2>Participación por día</h2>
+        <p class="sub" id="subDias">Cantidad de personas que enviaron su participación.</p>
+        <div class="graf" id="gDias"></div>
+      </article>
+      <article class="tarjeta ancha">
+        <h2>Horas de más participación</h2>
+        <p class="sub">Participaciones según la hora del día. La barra oscura es la hora pico.</p>
+        <div class="graf" id="gHoras"></div>
+      </article>
+      <article class="tarjeta">
+        <h2>Tiempo dentro de la pausa</h2>
+        <p class="sub">Desde que se abre la pausa hasta que se envía.</p>
+        <div class="graf" id="gDur"></div>
+      </article>
+      <article class="tarjeta">
+        <h2>Tiempo de respuesta</h2>
+        <p class="sub">Cuánto tardaron en participar después de publicada la pausa.</p>
+        <div class="graf" id="gResp"></div>
+      </article>
+      <article class="tarjeta" id="tBien">
+        <h2>¿Aportó a su bienestar?</h2>
+        <p class="sub" id="subBien">Respuestas de los participantes.</p>
+        <div class="graf" id="gBien"></div>
+      </article>
+      <article class="tarjeta" id="tLogro">
+        <h2 id="titLogro">¿Lo logramos contigo?</h2>
+        <p class="sub" id="subLogro">Opciones elegidas en las Pausas Motivacionales.</p>
+        <div class="graf" id="gLogro"></div>
+      </article>
+      <article class="tarjeta" id="tPorPausa">
+        <h2>Participación por pausa</h2>
+        <p class="sub">Las pausas con más participantes.</p>
+        <div class="graf" id="gPausas"></div>
+      </article>
+    </section>
+
+    <section class="tarjeta">
+      <div class="tabla-top">
+        <h2 id="tablaTit">Participantes</h2>
+        <div class="der">
+          <input type="search" id="buscar" placeholder="Buscar nombre, cargo o respuesta…">
+          <button class="btn btn-primary" id="btnCsv">Descargar Excel (CSV)</button>
+        </div>
+      </div>
+      <div class="tabla-wrap">
+        <table>
+          <thead><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </section>
+  </template>
+
+  <div class="toast" id="toast"></div>
+
+<script type="module">
+  import { db } from "./js/firebase-config.js";
+  import { sessionReady } from "./js/auth-guard.js";
+  import { TIPOS } from "./js/tipos.js";
+  import { graficoColumnas, barrasHorizontales, barraApilada } from "./js/graficos.js";
+  import {
+    collection, query, where, getDocs
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const $ = (id) => document.getElementById(id);
+  const AZUL = "#1f6fd6";
+  const COLOR_SI = "#1f6fd6";   // azul y naranja: se distinguen también con daltonismo
+  const COLOR_NO = "#e07a2e";
+  const NOMBRE_ESTADO = { borrador: "Borrador", activa: "Publicada", cerrada: "Cerrada" };
+
+  // ---------- Formatos ----------
+  const fFecha = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", year: "numeric" });
+  const fDia = new Intl.DateTimeFormat("es", { day: "numeric", month: "short" });
+  const fHora = new Intl.DateTimeFormat("es", { hour: "2-digit", minute: "2-digit" });
+  const dos = (n) => String(n).padStart(2, "0");
+  function fmtSeg(s) {
+    s = Math.round(s);
+    if (s < 60) return `${s} s`;
+    if (s < 3600) return `${Math.floor(s / 60)} min ${dos(s % 60)} s`;
+    return `${Math.floor(s / 3600)} h ${Math.floor((s % 3600) / 60)} min`;
+  }
+  function fmtLapso(s) {
+    if (s < 60) return "< 1 min";
+    if (s < 3600) return `${Math.round(s / 60)} min`;
+    if (s < 86400) return `${Math.floor(s / 3600)} h ${Math.round((s % 3600) / 60)} min`;
+    return `${Math.floor(s / 86400)} d ${Math.round((s % 86400) / 3600)} h`;
+  }
+  const rangoHora = (h) => `${dos(h)}:00 – ${dos(h)}:59`;
+  function mediana(arr) {
+    if (!arr.length) return null;
+    const a = [...arr].sort((x, y) => x - y), m = Math.floor(a.length / 2);
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  }
+  const claveDia = (d) => `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`;
+  const plural = (n, s, p) => `${n} ${n === 1 ? s : p}`;
+
+  let toastTimer;
+  function toast(t) {
+    $("toast").textContent = t; $("toast").classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("show"), 2600);
+  }
+
+  // ---------- Carga de datos ----------
+  const { uid } = await sessionReady;
+  const ediciones = new Map();
+  let registros = [];
+  try {
+    const [eds, regs] = await Promise.all([
+      getDocs(query(collection(db, "ediciones"), where("uid", "==", uid))),
+      getDocs(query(collection(db, "registros"), where("propietario", "==", uid)))
+    ]);
+    eds.forEach((d) => ediciones.set(d.id, d.data()));
+    registros = regs.docs
+      .map((d) => ({ id: d.id, ...d.data() }))
+      .filter((r) => r.creado?.toDate)
+      .map((r) => ({ ...r, fecha: r.creado.toDate() }))
+      .sort((a, b) => b.fecha - a.fecha);
+  } catch (e) {
+    console.error(e);
+    $("contenido").innerHTML = '<div class="graf-vacio">No se pudieron cargar los registros. Revisa tu conexión o las reglas de Firebase.</div>';
+    throw e;
+  }
+
+  const fechaDe = (ts) => ts?.toDate ? ts.toDate() : null;
+  const publicacionDe = (edId) => {
+    const ed = ediciones.get(edId);
+    return ed ? fechaDe(ed.publicado) || fechaDe(ed.creado) : null;
+  };
+  const tituloDe = (edId) => ediciones.get(edId)?.titulo || "(pausa eliminada)";
+
+  // ---------- Selector de pausa (agrupado por tipo) ----------
+  const conteo = {};
+  for (const r of registros) conteo[r.edicionId] = (conteo[r.edicionId] || 0) + 1;
+  for (const t of TIPOS) {
+    const propias = [...ediciones.entries()]
+      .filter(([, e]) => e.tipo === t.tipo)
+      .sort(([, a], [, b]) => (fechaDe(b.creado) || 0) - (fechaDe(a.creado) || 0));
+    if (!propias.length) continue;
+    const g = document.createElement("optgroup");
+    g.label = t.nombre;
+    for (const [id, e] of propias) {
+      const o = document.createElement("option");
+      o.value = id;
+      o.textContent = `${e.titulo || "Sin título"} · ${plural(conteo[id] || 0, "participante", "participantes")}`;
+      g.append(o);
+    }
+    $("selPausa").append(g);
+  }
+
+  // ---------- Estado de filtros ----------
+  const pedido = new URLSearchParams(location.search).get("e");
+  if (pedido && ediciones.has(pedido)) $("selPausa").value = pedido;
+  let rango = "todo";
+  let busqueda = "";
+
+  $("contenido").replaceChildren($("plantilla").content.cloneNode(true));
+
+  $("selPausa").onchange = () => {
+    const url = new URL(location.href);
+    if ($("selPausa").value) url.searchParams.set("e", $("selPausa").value); else url.searchParams.delete("e");
+    history.replaceState(null, "", url);
+    pintar();
+  };
+  $("rangos").onclick = (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    rango = b.dataset.r;
+    $("rangos").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    pintar();
+  };
+  $("buscar").oninput = () => { busqueda = $("buscar").value.trim().toLowerCase(); pintarTabla(); };
+
+  function filtrados() {
+    const sel = $("selPausa").value;
+    const desde = rango === "todo" ? null : Date.now() - Number(rango) * 86400000;
+    return registros.filter((r) => (!sel || r.edicionId === sel) && (!desde || r.fecha >= desde));
+  }
+
+  // ---------- Pintar todo ----------
+  let actuales = [];
+  function pintar() {
+    actuales = filtrados();
+    pintarInfo();
+    pintarKpis();
+    pintarGraficos();
+    pintarTabla();
+  }
+
+  function pintarInfo() {
+    const sel = $("selPausa").value, box = $("infoPausa");
+    box.replaceChildren();
+    if (!sel) return;
+    const ed = ediciones.get(sel);
+    const tipo = TIPOS.find((t) => t.tipo === ed.tipo);
+    const pill = document.createElement("span");
+    pill.className = "pill " + (ed.estado || "borrador");
+    pill.textContent = NOMBRE_ESTADO[ed.estado] || "Borrador";
+    const pub = publicacionDe(sel);
+    box.append(pill, `${tipo?.nombre || ""}`, pub ? ` · Publicada el ${fFecha.format(pub)}` : "");
+    if (tipo?.archivo) {
+      const a = document.createElement("a");
+      a.href = `${tipo.archivo}?id=${encodeURIComponent(sel)}`;
+      a.textContent = "Abrir en el editor →";
+      box.append(a);
+    }
+  }
+
+  function duraciones(lista) {
+    return lista.map((r) => r.medio?.duracionSeg).filter((n) => typeof n === "number" && n >= 0 && n < 6 * 3600);
+  }
+  function lapsos(lista) {
+    return lista.map((r) => {
+      const pub = publicacionDe(r.edicionId);
+      return pub ? (r.fecha - pub) / 1000 : null;
+    }).filter((n) => n !== null && n >= 0);
+  }
+  // Tipos cuya respuesta es una opción con emoji (no el 👍/😢 de las Pausas Activas).
+  const TIPOS_CON_OPCIONES = ["pausa_motivacional", "campana_informativa", "sugerencia_aprendizaje"];
+  const conOpciones = (r) => TIPOS_CON_OPCIONES.includes(r.tipo);
+
+  // Cuántas veces se eligió cada opción (de mayor a menor).
+  const etiquetaOpcion = (r) => [r.contenido?.opcionEmoji, r.contenido?.opcion].filter(Boolean).join(" ").trim();
+  function conteoOpciones(lista) {
+    const c = new Map();
+    for (const r of lista) {
+      const k = etiquetaOpcion(r);
+      if (k) c.set(k, (c.get(k) || 0) + 1);
+    }
+    return [...c.entries()].sort((a, b) => b[1] - a[1]).map(([etiqueta, valor]) => ({
+      etiqueta, valor, tip: `${etiqueta}\n${plural(valor, "persona", "personas")} (${Math.round((valor / lista.length) * 100)}%)`
+    }));
+  }
+  function porHora(lista) {
+    const h = Array(24).fill(0);
+    for (const r of lista) h[r.fecha.getHours()]++;
+    return h;
+  }
+
+  function pintarKpis() {
+    const n = actuales.length;
+    $("kTotal").textContent = n;
+    const personas = new Set(actuales.map((r) => (r.participante?.nombre || "").trim().toLowerCase())).size;
+    $("kTotalSub").textContent = n ? plural(personas, "persona distinta", "personas distintas") : "Aún nadie ha participado";
+
+    // Pausas Activas: % que dijo que sí. Si solo hay tipos con opciones: la opción más elegida.
+    const activas = actuales.filter((r) => r.tipo === "pausa_activa");
+    const motiv = actuales.filter(conOpciones);
+    if (activas.length || !motiv.length) {
+      const si = activas.filter((r) => r.contenido?.bienestar === "si").length;
+      $("kBienLbl").textContent = "Aportó a su bienestar";
+      $("kBien").textContent = activas.length ? Math.round((si / activas.length) * 100) + "%" : "–";
+      $("kBienSub").textContent = activas.length
+        ? `${si} de ${activas.length} dijeron que sí 👍${motiv.length ? " (Pausas Activas)" : ""}` : "";
+    } else {
+      const [top] = conteoOpciones(motiv);
+      $("kBienLbl").textContent = "Opción más elegida";
+      $("kBien").textContent = top ? top.etiqueta : "–";
+      $("kBienSub").textContent = top ? `${top.valor} de ${motiv.length} (${Math.round((top.valor / motiv.length) * 100)}%)` : "";
+    }
+
+    const md = mediana(duraciones(actuales));
+    $("kDur").textContent = md === null ? "–" : fmtSeg(md);
+    const ml = mediana(lapsos(actuales));
+    $("kResp").textContent = ml === null ? "–" : fmtLapso(ml);
+
+    const horas = porHora(actuales);
+    const max = Math.max(...horas);
+    const pico = horas.indexOf(max);
+    $("kPico").textContent = n ? `${dos(pico)}:00` : "–";
+    $("kPicoSub").textContent = n ? `${plural(max, "participación", "participaciones")} entre ${rangoHora(pico)}` : "";
+  }
+
+  function serieDias(lista) {
+    if (!lista.length) return { items: [], semanal: false };
+    const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+    let inicio;
+    if (rango !== "todo") { inicio = new Date(hoy); inicio.setDate(inicio.getDate() - Number(rango) + 1); }
+    else { inicio = new Date(Math.min(...lista.map((r) => r.fecha))); inicio.setHours(0, 0, 0, 0); }
+    const dias = Math.round((hoy - inicio) / 86400000) + 1;
+    const semanal = dias > 45;
+    const cuenta = new Map();
+    for (const r of lista) {
+      const d = new Date(r.fecha); d.setHours(0, 0, 0, 0);
+      if (semanal) d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); // lunes de esa semana
+      const k = claveDia(d);
+      cuenta.set(k, (cuenta.get(k) || 0) + 1);
+    }
+    const items = [];
+    const d = new Date(inicio);
+    if (semanal) d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+    while (d <= hoy) {
+      const v = cuenta.get(claveDia(d)) || 0;
+      const et = fDia.format(d);
+      items.push({ etiqueta: et, valor: v, tip: `${semanal ? "Semana del " : ""}${et}\n${plural(v, "participación", "participaciones")}` });
+      d.setDate(d.getDate() + (semanal ? 7 : 1));
+    }
+    return { items, semanal };
+  }
+
+  function histograma(valores, cortes, etiquetas) {
+    const c = Array(etiquetas.length).fill(0);
+    for (const v of valores) {
+      let i = cortes.findIndex((lim) => v < lim);
+      if (i === -1) i = etiquetas.length - 1;
+      c[i]++;
+    }
+    return etiquetas.map((e, i) => ({ etiqueta: e, valor: c[i], tip: `${e}\n${plural(c[i], "participación", "participaciones")}` }));
+  }
+
+  function pintarGraficos() {
+    const angosto = $("gDias").clientWidth < 520;
+
+    const { items: dias, semanal } = serieDias(actuales);
+    $("subDias").textContent = semanal
+      ? "Participaciones agrupadas por semana."
+      : "Cantidad de personas que enviaron su participación.";
+    graficoColumnas($("gDias"), dias, {
+      color: AZUL,
+      cadaEtiqueta: Math.max(1, Math.ceil(dias.length / (angosto ? 6 : 12))),
+      textoVacio: "Aún no hay participaciones en este periodo."
+    });
+
+    const horas = porHora(actuales);
+    const max = Math.max(...horas);
+    graficoColumnas($("gHoras"), horas.map((v, h) => ({
+      etiqueta: `${h}h`, valor: v, tip: `${rangoHora(h)}\n${plural(v, "participación", "participaciones")}`
+    })), {
+      color: "#8fb8ee", colorResaltado: "#0b4592",
+      resaltar: max ? horas.indexOf(max) : -1,
+      cadaEtiqueta: angosto ? 4 : 2,
+      textoVacio: "Aún no hay participaciones en este periodo."
+    });
+
+    graficoColumnas($("gDur"), histograma(
+      duraciones(actuales),
+      [60, 120, 180, 300, 600],
+      ["< 1 min", "1–2 min", "2–3 min", "3–5 min", "5–10 min", "> 10 min"]
+    ), { color: "#0f8fa8", alto: 200, textoVacio: "Se mide en las participaciones nuevas (desde esta versión)." });
+
+    graficoColumnas($("gResp"), histograma(
+      lapsos(actuales),
+      [3600, 3 * 3600, 6 * 3600, 24 * 3600, 3 * 86400],
+      ["< 1 h", "1–3 h", "3–6 h", "6–24 h", "1–3 días", "> 3 días"]
+    ), { color: "#12a07c", alto: 200, textoVacio: "Aún no hay participaciones en este periodo." });
+
+    // Respuestas según el tipo de pausa que haya en la selección.
+    const sel = $("selPausa").value;
+    const tipoSel = sel ? ediciones.get(sel)?.tipo : null;
+    const activas = actuales.filter((r) => r.tipo === "pausa_activa");
+    const motiv = actuales.filter(conOpciones);
+
+    $("tBien").hidden = tipoSel ? tipoSel !== "pausa_activa" : !activas.length && !!motiv.length;
+    if (!$("tBien").hidden) {
+      const si = activas.filter((r) => r.contenido?.bienestar === "si").length;
+      const no = activas.filter((r) => r.contenido?.bienestar === "no").length;
+      $("subBien").textContent = sel ? "Respuestas de los participantes." : "Respuestas en las Pausas Activas.";
+      barraApilada($("gBien"), [
+        { etiqueta: "Sí aportó", valor: si, color: COLOR_SI, icono: "👍" },
+        { etiqueta: "No mucho", valor: no, color: COLOR_NO, icono: "😢" }
+      ], { textoVacio: "Aún no hay respuestas en este periodo." });
+    }
+
+    const edSel = sel ? ediciones.get(sel) : null;
+    $("tLogro").hidden = tipoSel
+      ? !TIPOS_CON_OPCIONES.includes(tipoSel) || edSel?.modo === "abierta"   // sugerencias abiertas: se leen en la tabla
+      : !motiv.some((r) => r.contenido?.opcion);
+    if (!$("tLogro").hidden) {
+      const pregunta = edSel ? edSel.textos?.logro || edSel.tema : null;
+      $("titLogro").textContent = pregunta || "Respuestas a la pregunta";
+      $("subLogro").textContent = sel ? "Opciones que eligieron los participantes."
+        : "Opciones elegidas en Motivacionales, Campañas y Sugerencias.";
+      barrasHorizontales($("gLogro"), conteoOpciones(motiv), { color: AZUL, textoVacio: "Aún no hay respuestas en este periodo." });
+    }
+
+    // Por pausa: solo cuando se ven todas.
+    $("tPorPausa").hidden = !!sel;
+    if (!sel) {
+      const c = new Map();
+      for (const r of actuales) c.set(r.edicionId, (c.get(r.edicionId) || 0) + 1);
+      const items = [...c.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+        .map(([id, v]) => ({ etiqueta: tituloDe(id), valor: v, tip: `${tituloDe(id)}\n${plural(v, "participación", "participaciones")}` }));
+      barrasHorizontales($("gPausas"), items, { color: AZUL, textoVacio: "Aún no hay participaciones en este periodo." });
+    }
+  }
+
+  // ---------- Tabla ----------
+  function columnas() {
+    const cols = [
+      ["Fecha", (r) => fFecha.format(r.fecha)],
+      ["Hora", (r) => fHora.format(r.fecha)],
+      ["Nombre", (r) => r.participante?.nombre || ""],
+      ["Cargo", (r) => r.participante?.cargo || ""]
+    ];
+    if (!$("selPausa").value) cols.push(["Pausa", (r) => tituloDe(r.edicionId)]);
+    if (actuales.some((r) => r.tipo === "pausa_motivacional")) {
+      cols.push(["Palabra", (r) => r.contenido?.palabra || ""]);
+    }
+    cols.push(
+      ["Respuesta a la pausa", (r) => r.contenido?.bienestar === "si" ? "Sí aportó"
+        : r.contenido?.bienestar === "no" ? "No mucho"
+        : r.contenido?.opcion || r.contenido?.sugerencia || ""],
+      ["Reto", (r) => r.contenido?.pregunta || ""],
+      ["Respuesta al reto", (r) => r.contenido?.respuesta || ""],
+      ["Tiempo en la pausa", (r) => typeof r.medio?.duracionSeg === "number" ? fmtSeg(r.medio.duracionSeg) : ""],
+      ["Respondió tras publicar", (r) => { const p = publicacionDe(r.edicionId); return p ? fmtLapso((r.fecha - p) / 1000) : ""; }],
+      ["Dispositivo", (r) => r.medio?.dispositivo || ""]
+    );
+    return cols;
+  }
+  const NUMERICAS = new Set(["Fecha", "Hora", "Tiempo en la pausa", "Respondió tras publicar"]);
+
+  function visibles() {
+    if (!busqueda) return actuales;
+    return actuales.filter((r) =>
+      [r.participante?.nombre, r.participante?.cargo, r.contenido?.respuesta, r.contenido?.sugerencia,
+        r.contenido?.opcion, tituloDe(r.edicionId)]
+        .some((t) => (t || "").toLowerCase().includes(busqueda)));
+  }
+
+  function pintarTabla() {
+    // La pregunta del reto y la palabra van en el CSV, no en pantalla.
+    const cols = columnas().filter(([t]) => t !== "Reto" && t !== "Palabra");
+    const filas = visibles();
+    $("tablaTit").textContent = `Participantes (${filas.length})`;
+    $("thead").replaceChildren(...cols.map(([t]) => { const th = document.createElement("th"); th.textContent = t; return th; }));
+    const tb = $("tbody");
+    tb.replaceChildren();
+    if (!filas.length) {
+      const tr = document.createElement("tr"), td = document.createElement("td");
+      td.colSpan = cols.length; td.className = "sin-filas";
+      td.textContent = busqueda ? "Nadie coincide con la búsqueda." : "Aún no hay participaciones.";
+      tr.append(td); tb.append(tr);
+      return;
+    }
+    for (const r of filas) {
+      const tr = document.createElement("tr");
+      for (const [t, f] of cols) {
+        const td = document.createElement("td");
+        if (t === "Respuesta a la pausa") {
+          const v = r.contenido?.bienestar;
+          if (v === "si") td.innerHTML = '<span class="emo" title="Sí aportó">👍</span>';
+          else if (v === "no") td.innerHTML = '<span class="emo" title="No mucho">😢</span>';
+          else td.textContent = etiquetaOpcion(r) || r.contenido?.sugerencia || "";
+        } else {
+          td.textContent = f(r);
+        }
+        if (NUMERICAS.has(t)) td.className = "num";
+        tr.append(td);
+      }
+      tb.append(tr);
+    }
+  }
+
+  // ---------- Exportar CSV (abre en Excel) ----------
+  $("btnCsv").onclick = () => {
+    const filas = visibles();
+    if (!filas.length) return toast("No hay filas para descargar.");
+    const cols = columnas();
+    const celda = (v) => `"${String(v).replace(/"/g, '""')}"`;
+    const lineas = [cols.map(([t]) => celda(t)).join(";")];
+    for (const r of filas) lineas.push(cols.map(([, f]) => celda(f(r))).join(";"));
+    const blob = new Blob(["﻿" + lineas.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    const sel = $("selPausa").value;
+    const nombre = (sel ? tituloDe(sel) : "todas-las-pausas").replace(/[^\p{L}\p{N}]+/gu, "-").toLowerCase();
+    a.download = `registros-${nombre}-${claveDia(new Date())}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+
+  pintar();
+
+  // Los gráficos SVG se ajustan al ancho: se redibujan al cambiar el tamaño.
+  let anchoPrevio = $("gDias").clientWidth, resizeTimer;
+  new ResizeObserver(() => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const w = $("gDias").clientWidth;
+      if (w !== anchoPrevio) { anchoPrevio = w; pintarGraficos(); }
+    }, 150);
+  }).observe($("contenido"));
+</script>
+</body>
+</html>

@@ -24,9 +24,25 @@ la extensión *Live Server* de VS Code, o `npx serve .`.
 | `login.html` | Resumen y objetivo de la plataforma + ingreso, registro y recuperar contraseña |
 | `inicio.html` | Franja informativa (nombre, fecha/hora, contadores) + "+ Pausas" y Consulta de Registros |
 | `pausas-activas.html` | Editor de Pausas Activas con vista previa de celular y enlace para compartir |
+| `pausas-motivacionales.html` | Editor de Pausas Motivacionales (tarjeta palabra → frase, libro opcional) |
+| `campanas-informativas.html` | Editor de Campañas Informativas (telón a pantalla completa + información visual) |
+| `js/campana-informativa-vista.js` + `css/campana-informativa.css` | Lo que ve el trabajador en una Campaña Informativa |
+| `sugerencias-aprendizaje.html` | Editor de Sugerencias (respuesta abierta o cerrada con nubes) |
+| `js/sugerencia-vista.js` + `css/sugerencia.css` | Lo que ve el trabajador en Sugerencias: nubes, paloma y despedida |
+| `js/firma.js` + `css/firma.css` | Firma manuscrita animada «SST & RH» |
+| `js/compartir.js` | Mensaje de WhatsApp por tipo, código del enlace corto y QR descargable |
+| `p/index.html` | Enlace corto: `p/?CODIGO` lleva a la pausa (colección `cortos`) |
+| `js/notas.js` + `css/notas.css` | Notas rápidas del inicio (prioridad por color, completar y historial) |
+| `js/horario.js` | Horario de apertura y cierre de cada pausa (editor, enlace y etiqueta "Disponible hasta…") |
+| `js/visibles.js` | Interruptores Activo/Inactivo de cada elemento (`visible` en la pausa, `data-vis` en la vista) |
+| `js/media.js` + `css/media.css` | Video, imagen con "toca para ampliar", visor con zoom y compresión de fotos subidas |
+| `js/editor-pausa.js` + `css/editor.css` | Motor común de los editores (lista, campos, colores, guardar/publicar, enlace) |
+| `js/pausa-motivacional-vista.js` + `css/pausa-motivacional.css` | Lo que ve el trabajador en una Pausa Motivacional |
 | `responder.html` | Página pública que abre el trabajador (`responder.html?e=<id>`) |
 | `js/tipos.js` | Los 4 tipos de pausa (nombre, ícono, archivo del editor) |
 | `js/pausa-activa-vista.js` + `css/pausa-activa.css` | Lo que ve el trabajador en una Pausa Activa |
+| `registros.html` + `css/registros.css` | Consulta de Registros: indicadores, gráficos, tabla y descarga CSV |
+| `js/graficos.js` | Gráficos SVG livianos (columnas, barras horizontales, barra apilada) |
 | `js/pantalla-carga.js` + `css/pantalla-carga.css` | Pantalla de carga con frase animada y firma «SST & RH» (15 frases por tipo) |
 | `js/firebase-config.js` | Inicializa Firebase (aquí van tus claves) |
 | `js/auth-guard.js` | Protege páginas internas; redirige a login sin sesión |

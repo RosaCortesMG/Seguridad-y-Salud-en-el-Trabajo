@@ -1,0 +1,139 @@
+/* pausa-motivacional.css — tarjetas de la Pausa Motivacional.
+   Se carga junto a css/pausa-activa.css (base .pa). */
+.pm{--prog:0;overflow-x:hidden}  /* la tarjeta lanzada sale de la pantalla sin crear scroll */
+.pm-titulo{margin:6px 0 2px!important}
+
+/* ---------- Mazo: dos tarjetas apiladas en la misma celda ---------- */
+.pm-mazo{display:grid;container-type:inline-size;padding:8px 6px 4px}
+.pm-carta{
+  grid-area:1 / 1;min-height:320px;border-radius:28px;padding:30px 22px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;
+  box-shadow:0 14px 34px rgba(15,36,52,.16);
+}
+
+/* Tarjeta de la palabra (encima) */
+.pm-palabra{
+  position:relative;z-index:2;cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;
+  background:linear-gradient(145deg,var(--pm-carta1),var(--pm-carta2));color:var(--pm-palabra);
+  transition:transform .55s cubic-bezier(.2,.9,.3,1.1),opacity .45s ease;
+  overflow:hidden;
+}
+.pm-palabra::before,.pm-palabra::after{
+  content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none;
+}
+.pm-palabra::before{width:70%;aspect-ratio:1;top:-30%;right:-25%}
+.pm-palabra::after{width:45%;aspect-ratio:1;bottom:-18%;left:-15%}
+.pm-palabra:focus-visible{outline:4px solid color-mix(in srgb,var(--pm-carta1) 40%,transparent);outline-offset:4px}
+.pm-palabra.arrastrando{transition:none;cursor:grabbing}
+.pm-palabra.lanzada{opacity:0;pointer-events:none}
+.pm-palabra.sin-anim{transition:none}
+/* Pista: la tarjeta "se asoma" hacia un lado hasta que la tocan */
+.pm-palabra:not(.tocada):not(.lanzada){animation:pm-asomar 3.2s ease-in-out 1.2s infinite}
+
+.pm-palabra .pm-tag{color:inherit;opacity:.9;background:rgba(255,255,255,.18)}
+.pm-pal{
+  font-family:var(--pa-titulos);font-weight:700;line-height:1.05;letter-spacing:-.01em;
+  font-size:min(56px,calc(165cqi / var(--pm-len,8)));overflow-wrap:anywhere;
+  text-shadow:0 4px 18px rgba(0,0,0,.18);position:relative;
+}
+.pm-pista{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;opacity:.92;margin-top:6px;position:relative}
+.pm-mano{display:inline-block;font-size:22px;animation:pm-mano 1.6s ease-in-out infinite}
+
+/* Tarjeta de la frase (debajo): asomada e inclinada hasta descubrirla */
+.pm-frase{
+  position:relative;z-index:1;background:var(--pa-tarjeta);
+  transform:translateY(calc(16px * (1 - var(--prog)))) scale(calc(.92 + .08 * var(--prog))) rotate(calc(-3deg * (1 - var(--prog))));
+  transition:transform .5s cubic-bezier(.2,1.3,.4,1);
+}
+.pm-frase > :not(.pm-chispas){opacity:calc(var(--prog) * .55);transition:opacity .35s ease}
+.pm-revelada .pm-frase{transform:none}
+.pm-revelada .pm-frase > :not(.pm-chispas){opacity:1}
+.pm-revelada .pm-frase{animation:pm-pop .6s cubic-bezier(.3,1.5,.5,1)}
+
+.pm-tag{
+  font-family:var(--pa-titulos);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+  padding:6px 12px;border-radius:999px;background:color-mix(in srgb,var(--c,currentColor) 12%,transparent);
+}
+.pm-texto{
+  margin:0;position:relative;font-family:var(--pa-titulos);font-weight:500;
+  font-size:clamp(19px,6.4cqi,26px);line-height:1.32;padding:14px 4px 0;overflow-wrap:anywhere;
+}
+.pm-texto::before{
+  content:"“";position:absolute;top:-22px;left:50%;transform:translateX(-50%);
+  font-size:64px;line-height:1;color:var(--pm-carta1);opacity:.35;font-family:Georgia,serif;
+}
+.pm-autor{font-style:normal;font-weight:800;font-size:14.5px}
+.pm-autor:empty{display:none}
+
+/* Chispas al descubrir */
+.pm-chispas{position:absolute;inset:0;pointer-events:none;display:grid;place-items:center}
+.pm-chispas span{
+  grid-area:1 / 1;font-size:22px;opacity:0;
+  animation:pm-chispa 1.1s ease-out forwards;
+}
+
+/* ---------- Botones bajo el mazo ---------- */
+.pm-controles{display:flex;justify-content:center}
+.pm-btn{
+  border:0;background:color-mix(in srgb,var(--pm-carta1) 12%,transparent);color:var(--pa-texto);
+  font-family:var(--pa-titulos);font-weight:600;font-size:15px;padding:11px 20px;border-radius:999px;cursor:pointer;
+}
+.pm-btn:active{transform:scale(.97)}
+
+/* ---------- Libro ---------- */
+.pm-libro{display:flex;flex-direction:column;align-items:center;gap:10px}
+.pm-libro-btn{
+  border:2px solid var(--c);background:var(--pa-tarjeta);color:var(--c);
+  font-family:var(--pa-titulos);font-weight:600;font-size:16px;padding:11px 20px;border-radius:16px;cursor:pointer;
+  box-shadow:0 6px 16px color-mix(in srgb,var(--c) 18%,transparent);
+}
+.pm-libro-btn[aria-expanded=true]{background:var(--c);color:#fff}
+.pm-libro-info{
+  width:100%;display:flex;gap:14px;align-items:center;text-align:left;
+  background:var(--pa-tarjeta);border-radius:18px;padding:16px;
+  border:2px dashed color-mix(in srgb,var(--c) 45%,transparent);
+}
+.pm-libro-ico{font-size:40px;line-height:1;flex:none}
+.pm-libro-datos{display:flex;flex-direction:column;gap:2px;color:var(--pa-texto);min-width:0}
+.pm-libro-tit{font-family:var(--pa-titulos);font-weight:600;font-size:17px;color:var(--c);overflow-wrap:anywhere}
+.pm-libro-aut{font-size:14px;font-weight:700}
+.pm-libro-pag{font-size:13.5px;font-weight:800;opacity:.75}
+.pm-libro-aut:empty,.pm-libro-pag:empty{display:none}
+.pm-libro-link{margin-top:6px;font-weight:800;font-size:14px;color:var(--c);text-decoration:none}
+
+/* ---------- Formulario ---------- */
+.pm-objetivo{
+  text-align:center;padding:14px;border-radius:16px;margin:4px 0 14px;
+  background:color-mix(in srgb,var(--c) 9%,transparent);
+}
+.pm-objetivo-tag{display:block;font-family:var(--pa-titulos);font-weight:600;font-size:12.5px;letter-spacing:.12em;text-transform:uppercase}
+.pm-objetivo p{margin:6px 0 0;font-size:15.5px;font-weight:700;line-height:1.45;color:var(--pa-texto)}
+.pm-opts{grid-template-columns:repeat(var(--n,3),minmax(0,1fr))}
+.pm-opts .pa-opt{padding:12px 6px 10px;font-size:13px}
+.pm-opts .pa-opt .emo{font-size:36px;animation:pa-flotar 2.6s ease-in-out infinite}
+.pm-opts .pa-opt:nth-child(2) .emo{animation-delay:.5s}
+.pm-opts .pa-opt:nth-child(3) .emo{animation-delay:1s}
+.pm-opts .pa-opt:nth-child(4) .emo{animation-delay:1.5s}
+.pm-opts .pa-opt.on .emo{animation:pa-pulgar .9s cubic-bezier(.3,1.6,.5,1) 1,pa-flotar 2.6s ease-in-out .9s infinite}
+
+.pm-entrar{animation:pm-subir .5s ease-out both}
+
+@keyframes pm-asomar{
+  0%,55%,100%{transform:translateX(0) rotate(0)}
+  65%{transform:translateX(34px) rotate(5deg)}
+  75%{transform:translateX(-8px) rotate(-1deg)}
+  85%{transform:translateX(4px) rotate(.5deg)}
+}
+@keyframes pm-mano{0%,100%{transform:translateX(-6px) rotate(-10deg)}50%{transform:translateX(10px) rotate(10deg)}}
+@keyframes pm-pop{0%{transform:scale(.92) rotate(-3deg)}60%{transform:scale(1.03) rotate(.5deg)}100%{transform:none}}
+@keyframes pm-chispa{
+  0%{opacity:0;transform:translate(0,0) scale(.4)}
+  20%{opacity:1}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(40deg)}
+}
+@keyframes pm-subir{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion:reduce){
+  .pm-palabra,.pm-frase{transition:none}
+  .pm-palabra:not(.tocada),.pm-mano,.pm-revelada .pm-frase,.pm-chispas span,.pm-opts .pa-opt .emo{animation:none!important}
+}

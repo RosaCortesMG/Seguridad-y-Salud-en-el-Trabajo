@@ -3,13 +3,23 @@
 //  - pausas-activas.html → vista previa en vivo (modo "preview", no guarda nada)
 //  - responder.html      → enlace real (modo "real", llama a onEnviar)
 
+import { pintarVideo, pintarImagen } from "./media.js";
+import { crearFirma } from "./firma.js";
+import { visibles, aplicarVisibles, faltanDatos } from "./visibles.js";
+export { analizarVideo } from "./media.js";
+
 export const TIPO = "pausa_activa";
+
+// Elementos que RH puede activar o desactivar (interruptores del editor).
+export const VISIBLES = ["carga", "descripcion", "video", "imagen", "nombre", "cargo", "bienestar", "reto"];
 
 export const DEFAULTS = {
   titulo: "Pausa activa",
   descripcion: "Tómate 5 minutos, sigue el video y cuéntanos cómo te fue.",
   video: "",
+  imagen: "",
   textos: {
+    ampliar: "🔍 Toca la imagen para verla en grande",
     participacion: "Tu participación",
     nombre: "Nombre y Apellido",
     cargo: "Cargo",
@@ -75,93 +85,32 @@ export function normalizar(d = {}) {
     titulo: typeof d.titulo === "string" ? d.titulo : DEFAULTS.titulo,
     descripcion: typeof d.descripcion === "string" ? d.descripcion : DEFAULTS.descripcion,
     video: typeof d.video === "string" ? d.video : "",
+    imagen: typeof d.imagen === "string" ? d.imagen : "",
+    visible: visibles(d.visible, VISIBLES),
     textos,
     estilo
   };
-}
-
-// Convierte el link pegado por RH en algo reproducible.
-export function analizarVideo(url) {
-  url = (url || "").trim();
-  if (!url) return null;
-  let u;
-  try { u = new URL(url); } catch { return { tipo: "invalido" }; }
-  if (u.protocol !== "https:" && u.protocol !== "http:") return { tipo: "invalido" };
-
-  const host = u.hostname.replace(/^(www\.|m\.)/, "");
-  let id = null;
-  if (host === "youtu.be") id = u.pathname.slice(1).split("/")[0];
-  else if (host === "youtube.com" || host === "music.youtube.com" || host === "youtube-nocookie.com") {
-    id = u.searchParams.get("v");
-    if (!id) {
-      const m = u.pathname.match(/^\/(shorts|embed|live)\/([\w-]+)/);
-      if (m) id = m[2];
-    }
-  }
-  if (id && /^[\w-]{6,}$/.test(id)) {
-    return { tipo: "iframe", fuente: "YouTube", src: `https://www.youtube-nocookie.com/embed/${id}?rel=0&playsinline=1` };
-  }
-  if (host === "vimeo.com") {
-    const m = u.pathname.match(/^\/(\d+)/);
-    if (m) return { tipo: "iframe", fuente: "Vimeo", src: `https://player.vimeo.com/video/${m[1]}` };
-  }
-  if (host === "drive.google.com") {
-    const m = u.pathname.match(/\/file\/d\/([\w-]+)/);
-    if (m) return { tipo: "iframe", fuente: "Google Drive", src: `https://drive.google.com/file/d/${m[1]}/preview` };
-  }
-  if (/\.(mp4|webm|ogg)$/i.test(u.pathname)) return { tipo: "video", fuente: "Archivo de video", src: u.href };
-  return { tipo: "enlace", fuente: "Enlace externo", src: u.href };
-}
-
-function pintarVideo(caja, url) {
-  caja.replaceChildren();
-  caja.className = "pa-video";
-  const v = analizarVideo(url);
-  if (!v || v.tipo === "invalido") {
-    caja.classList.add("vacio");
-    caja.textContent = v ? "El link del video no es válido." : "Aquí aparecerá el video";
-    return;
-  }
-  if (v.tipo === "iframe") {
-    const f = document.createElement("iframe");
-    f.src = v.src;
-    f.title = "Video de la pausa activa";
-    f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-    f.allowFullscreen = true;
-    f.referrerPolicy = "strict-origin-when-cross-origin";
-    f.loading = "lazy";
-    caja.append(f);
-  } else if (v.tipo === "video") {
-    const el = document.createElement("video");
-    el.src = v.src; el.controls = true; el.playsInline = true; el.preload = "metadata";
-    caja.append(el);
-  } else {
-    caja.classList.add("enlace");
-    const a = document.createElement("a");
-    a.href = v.src; a.target = "_blank"; a.rel = "noopener";
-    a.textContent = "▶  Ver el video";
-    caja.append(a);
-  }
 }
 
 const PLANTILLA = `
 <div class="pa">
   <section class="pa-card">
     <h1 data-t="titulo" data-c="titulo"></h1>
-    <p class="pa-desc" data-t="descripcion" data-c="descripcion"></p>
+    <p class="pa-desc" data-t="descripcion" data-c="descripcion" data-vis="descripcion"></p>
     <div class="pa-video"></div>
+    <div class="pa-imagen" hidden></div>
   </section>
 
   <form class="pa-card pa-form" novalidate>
     <h2 data-t="textos.participacion" data-c="participacion"></h2>
-    <label><span data-t="textos.nombre" data-c="nombre"></span>
+    <label data-vis="nombre"><span data-t="textos.nombre" data-c="nombre"></span>
       <input name="nombre" autocomplete="name" maxlength="120">
     </label>
-    <label><span data-t="textos.cargo" data-c="cargo"></span>
+    <label data-vis="cargo"><span data-t="textos.cargo" data-c="cargo"></span>
       <input name="cargo" autocomplete="organization-title" maxlength="120">
     </label>
 
-    <fieldset class="pa-bien">
+    <fieldset class="pa-bien" data-vis="bienestar">
       <legend data-t="textos.bienestar" data-c="bienestar"></legend>
       <div class="pa-opts">
         <button type="button" class="pa-opt si" data-v="si" data-c="si" aria-pressed="false">
@@ -173,7 +122,7 @@ const PLANTILLA = `
       </div>
     </fieldset>
 
-    <div class="pa-reto" data-c="reto">
+    <div class="pa-reto" data-c="reto" data-vis="reto">
       <div class="pa-reto-tag"><span aria-hidden="true">🎯</span><span data-t="textos.reto"></span></div>
       <p class="pa-preg" data-t="textos.pregunta" data-c="pregunta"></p>
       <input name="respuesta" maxlength="200" data-ph="textos.respuesta" autocomplete="off">
@@ -190,25 +139,31 @@ const PLANTILLA = `
     <div class="pa-registrada" data-t="textos.registrada" data-c="registrada"></div>
     <h2 data-t="textos.gracias" data-c="gracias"></h2>
     <p data-t="textos.graciasSub"></p>
-    <div class="pa-firma">SST &amp; RH</div>
+    <div class="pa-firma"></div>
   </section>
 </div>`;
 
 const leer = (obj, ruta) => ruta.split(".").reduce((o, k) => o?.[k], obj) ?? "";
 
+// Nombre común que usa responder.html para cualquier tipo de pausa.
+export { montarPausaActiva as montar };
+
 /**
  * Monta la pausa dentro de `root`.
  * @param {"preview"|"real"} opciones.modo
- * @param {(r:{nombre,cargo,bienestar,pregunta,respuesta})=>Promise} opciones.onEnviar
- * @returns {{ actualizar(datos): void }}
+ * @param {(r:{nombre,cargo,contenido})=>Promise} opciones.onEnviar
+ * @returns {{ actualizar(datos): void, verDespedida(): void }}
  */
 export function montarPausaActiva(root, datos, { modo = "real", onEnviar, pagina = false } = {}) {
   root.innerHTML = PLANTILLA;
   const el = root.querySelector(".pa");
   if (pagina) el.classList.add("pa-pagina");
+  // La firma se escribe cuando aparece la despedida (al mostrarse, la animación arranca).
+  el.querySelector(".pa-firma").append(crearFirma({ retraso: 1700 }));
   const form = el.querySelector(".pa-form");
   const opts = el.querySelector(".pa-opts");
   const caja = el.querySelector(".pa-video");
+  const imgBox = el.querySelector(".pa-imagen");
   const retoBox = el.querySelector(".pa-reto");
   const err = el.querySelector(".pa-err");
   const gracias = el.querySelector(".pa-gracias");
@@ -216,6 +171,7 @@ export function montarPausaActiva(root, datos, { modo = "real", onEnviar, pagina
 
   let estado = normalizar(datos);
   let videoActual = null;
+  let imagenActual = null;
   let bienestar = null;
 
   opts.addEventListener("click", (e) => {
@@ -267,14 +223,20 @@ export function montarPausaActiva(root, datos, { modo = "real", onEnviar, pagina
     const nombre = form.nombre.value.trim();
     const cargo = form.cargo.value.trim();
     const respuesta = form.respuesta.value.trim();
-    const pregunta = estado.textos.pregunta.trim();
-    if (!nombre || !cargo) return error("Escribe tu nombre, apellido y cargo.");
-    if (!bienestar) return error("Elige si la pausa aportó a tu bienestar.");
+    const v = estado.visible;
+    const pregunta = v.reto ? estado.textos.pregunta.trim() : "";
+    const falta = faltanDatos(v, nombre, cargo);
+    if (falta) return error(falta);
+    if (v.bienestar && !bienestar) return error("Elige si la pausa aportó a tu bienestar.");
     if (pregunta && !respuesta) return error("Responde el reto antes de enviar.");
 
     btn.disabled = true;
     try {
-      if (onEnviar) await onEnviar({ nombre, cargo, bienestar, pregunta, respuesta });
+      if (onEnviar) await onEnviar({
+        nombre: v.nombre ? nombre : "",
+        cargo: v.cargo ? cargo : "",
+        contenido: { bienestar: v.bienestar ? bienestar : "", pregunta, respuesta: pregunta ? respuesta : "" }
+      });
       despedir();
       if (modo === "preview") programarReinicio();
     } catch (ex) {
@@ -298,10 +260,22 @@ export function montarPausaActiva(root, datos, { modo = "real", onEnviar, pagina
     // Cada elemento con data-c toma su propio color (--c).
     el.querySelectorAll("[data-c]").forEach((n) => { n.style.setProperty("--c", s[n.dataset.c]); });
     retoBox.hidden = !estado.textos.pregunta.trim();
-    // Solo se recarga el video si cambió el link (evita reiniciarlo al escribir).
-    if (estado.video !== videoActual) {
-      videoActual = estado.video;
-      pintarVideo(caja, estado.video);
+    aplicarVisibles(el, estado.visible);
+    // Solo se recarga el video/imagen si cambió (evita reiniciarlo al escribir).
+    // En la vista previa, si no hay ninguno, se muestra un recuadro de ejemplo.
+    const video = estado.visible.video ? estado.video : "";
+    const imagen = estado.visible.imagen ? estado.imagen : "";
+    const placeholder = modo === "preview" && !video.trim() && !imagen.trim()
+      ? "Aquí aparecerá el video o la imagen" : "";
+    const claveVideo = video + "|" + placeholder;
+    if (claveVideo !== videoActual) {
+      videoActual = claveVideo;
+      pintarVideo(caja, video, { placeholder });
+    }
+    const claveImagen = imagen + "|" + estado.textos.ampliar;
+    if (claveImagen !== imagenActual) {
+      imagenActual = claveImagen;
+      pintarImagen(imgBox, imagen, { aviso: estado.textos.ampliar, alt: estado.titulo });
     }
   }
 

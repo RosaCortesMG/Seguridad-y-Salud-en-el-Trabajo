@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conecta RH · Sugerencias de Aprendizaje</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Dancing+Script:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/estilos.css">
+<link rel="stylesheet" href="css/editor.css">
+<link rel="stylesheet" href="css/pausa-activa.css">
+<link rel="stylesheet" href="css/sugerencia.css">
+<link rel="stylesheet" href="css/media.css">
+<link rel="stylesheet" href="css/pantalla-carga.css">
+<link rel="stylesheet" href="css/firma.css">
+<script type="module">import "./js/auth-guard.js";</script>
+<style>
+  /* Selector de tipo de respuesta */
+  .modos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+  .modo{position:relative;display:flex;flex-direction:column;gap:4px;padding:14px;border:2px solid var(--line);border-radius:14px;cursor:pointer;background:#fbfdff;transition:border-color .15s,background .15s}
+  .modo input{position:absolute;opacity:0;pointer-events:none}
+  .modo .ico{font-size:28px;line-height:1}
+  .modo b{font-size:15px}
+  .modo small{color:var(--muted);font-size:12.5px;line-height:1.4}
+  .modo:hover{border-color:#c7dbf6}
+  .modo:has(input:checked){border-color:var(--blue);background:var(--blue-soft)}
+  .modo:has(input:focus-visible){outline:3px solid rgba(31,111,214,.3);outline-offset:2px}
+  @media (max-width:640px){.modos{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="btn btn-ghost" href="inicio.html">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M19 12H5M11 6l-6 6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Inicio
+    </a>
+    <div class="spacer"></div>
+    <div class="brand">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.5 11.5h2l1-2 2 4 1-2h1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="name"><b>Conecta RH</b></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="encabezado">
+      <div class="ico green"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div>
+        <h1>Sugerencias de Aprendizaje</h1>
+        <p>Pregunta a tu equipo qué quiere aprender: con respuesta abierta o con opciones escondidas en nubes.</p>
+      </div>
+    </div>
+
+    <section class="mis">
+      <div class="mis-top">
+        <h2>Mis buzones de sugerencias</h2>
+        <button class="btn btn-primary" id="btnNueva">+ Nueva</button>
+      </div>
+      <div class="lista" id="lista" data-vacio="Aún no tienes buzones de sugerencias. ¡Crea el primero!"></div>
+    </section>
+
+    <div class="vista-switch solo-movil" id="vistaSwitch">
+      <button data-v="editar" class="on">Editar</button>
+      <button data-v="previa">Vista previa</button>
+    </div>
+
+    <div class="zona" id="zona" data-vista="editar">
+      <!-- EDITOR -->
+      <section class="panel">
+        <div class="tabs" role="tablist">
+          <button class="tab on" data-s="contenido">Pregunta</button>
+          <button class="tab" data-s="respuesta">Tipo de respuesta</button>
+          <button class="tab" data-s="participacion">Participación</button>
+          <button class="tab" data-s="apariencia">Apariencia</button>
+        </div>
+
+        <!-- PREGUNTA -->
+        <div class="seccion on" id="s-contenido">
+          <p class="nota"><input type="color" class="mini" value="#1f6fd6" tabindex="-1" aria-hidden="true">Toca el círculo junto a cada texto para cambiar su color.</p>
+          <div class="campo">
+            <div class="lbl"><label for="fTitulo">Título</label><input type="color" class="mini" data-k="estilo.titulo" title="Color del título"></div>
+            <input type="text" id="fTitulo" data-k="titulo" maxlength="200" placeholder="Ej: Sugerencias de aprendizaje de noviembre">
+          </div>
+          <div class="campo">
+            <div class="lbl"><label>Etiqueta superior</label><input type="color" class="mini" data-k="estilo.acento" title="Color de la etiqueta y detalles"></div>
+            <input type="text" data-k="textos.tag" maxlength="40">
+          </div>
+          <div class="campo" data-interruptor="descripcion">
+            <div class="lbl"><label>Contexto <span class="opc">· opcional</span></label><input type="color" class="mini" data-k="estilo.descripcion" title="Color"></div>
+            <textarea data-k="descripcion" maxlength="500"></textarea>
+          </div>
+          <div class="campo">
+            <div class="lbl"><label for="fTema">Pregunta para el equipo</label><input type="color" class="mini" data-k="estilo.tema" title="Color de la pregunta"></div>
+            <input type="text" id="fTema" data-k="tema" maxlength="160" placeholder="Ej: ¿Qué te gustaría aprender este mes?">
+          </div>
+
+          <h3>Video e imagen <span class="opc" style="text-transform:none;letter-spacing:0">· opcionales</span></h3>
+          <div class="campo" data-interruptor="imagen">
+            <label for="imgUrl">Imagen</label>
+            <div class="img-ed">
+              <div class="img-ed-fila">
+                <input type="url" id="imgUrl" placeholder="Pega el link de una imagen…">
+                <label class="btn btn-ghost" for="imgArchivo">📁 Subir del computador</label>
+                <input type="file" id="imgArchivo" accept="image/*" hidden>
+              </div>
+              <div class="img-ed-previa" id="imgPrevia" hidden><img alt=""><span></span><button type="button" class="btn btn-ghost" id="imgQuitar">Quitar</button></div>
+            </div>
+          </div>
+          <div class="campo">
+            <label>Mensaje para ampliar la imagen</label>
+            <input type="text" data-k="textos.ampliar" maxlength="60">
+          </div>
+          <div class="campo" data-interruptor="video">
+            <label for="fVideo">Link del video</label>
+            <input type="url" id="fVideo" data-k="video" placeholder="https://www.youtube.com/watch?v=...">
+            <div class="ayuda" id="videoAyuda"></div>
+          </div>
+
+          <h3>Pantalla de carga</h3>
+          <div class="campo" data-interruptor="carga">
+            <div class="lbl">
+              <label for="fCarga">Frase de bienvenida <span class="opc">· opcional</span></label>
+              <button type="button" class="btn btn-ghost btn-carga" data-ver-carga>▶ Ver</button>
+            </div>
+            <input type="text" id="fCarga" data-k="textos.carga" maxlength="80" placeholder="Vacía = una de 15 frases al azar">
+            <div class="ayuda">Pon *asteriscos* en las palabras que quieres destacar. Ej: Te *escuchamos*. Debajo siempre aparece la firma «SST &amp; RH».</div>
+          </div>
+        </div>
+
+        <!-- TIPO DE RESPUESTA -->
+        <div class="seccion" id="s-respuesta">
+          <h3>¿Cómo responde el trabajador?</h3>
+          <div class="modos">
+            <label class="modo">
+              <input type="radio" name="modo" value="abierta" data-k="modo">
+              <span class="ico">✍️</span>
+              <b>Respuesta abierta</b>
+              <small>Escribe su sugerencia con sus propias palabras.</small>
+            </label>
+            <label class="modo">
+              <input type="radio" name="modo" value="cerrada" data-k="modo">
+              <span class="ico">☁️</span>
+              <b>Respuesta cerrada</b>
+              <small>Elige entre opciones escondidas en nubes que va descubriendo al tocarlas.</small>
+            </label>
+          </div>
+
+          <div id="bloqueAbierta">
+            <div class="campo">
+              <label>Texto de ayuda en el cuadro</label>
+              <input type="text" data-k="textos.abiertaPh" maxlength="80">
+            </div>
+          </div>
+
+          <div id="bloqueCerrada">
+            <div class="campo">
+              <label>Mensaje de cómo funciona</label>
+              <textarea data-k="textos.comoFunciona" maxlength="200"></textarea>
+            </div>
+            <div class="campo">
+              <div class="lbl">
+                <label>Opciones <span class="opc">· de 2 a 6</span></label>
+                <div class="minis">
+                  <input type="color" class="mini" data-k="estilo.nube" title="Color de las nubes">
+                  <input type="color" class="mini" data-k="estilo.opcion" title="Color de las opciones">
+                </div>
+              </div>
+              <div class="opciones-ed" data-lista="opciones" data-min="2" data-max="6" data-ph="Opción" data-largo="50"></div>
+              <button type="button" class="btn btn-ghost agregar" data-agregar="opciones">+ Agregar opción</button>
+              <div class="ayuda">Círculos: color de las nubes · color de las opciones. Para emojis en Windows: tecla Windows + punto (.).</div>
+            </div>
+            <div class="dos">
+              <div class="campo"><label>Texto sobre cada nube</label><input type="text" data-k="textos.tocaNube" maxlength="30"></div>
+              <div class="campo"><label>Nombre de la opción «Otra»</label><input type="text" data-k="textos.otra" maxlength="30"></div>
+            </div>
+            <label class="switch-campo">
+              <input type="checkbox" data-k="permitirOtra">
+              <span>Permitir «Otra» con texto libre<small>Agrega una nube más donde el trabajador escribe su propia idea.</small></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- PARTICIPACIÓN -->
+        <div class="seccion" id="s-participacion">
+          <p class="nota"><input type="color" class="mini" value="#0d8a6a" tabindex="-1" aria-hidden="true">Toca el círculo junto a cada texto para cambiar su color.</p>
+          <h3>Datos del trabajador</h3>
+          <div class="campo">
+            <div class="lbl"><label>Título de la sección</label><input type="color" class="mini" data-k="estilo.participacion" title="Color"></div>
+            <input type="text" data-k="textos.participacion" maxlength="80">
+          </div>
+          <div class="dos">
+            <div class="campo" data-interruptor="nombre">
+              <div class="lbl"><label>Texto para el nombre</label><input type="color" class="mini" data-k="estilo.nombre" title="Color"></div>
+              <input type="text" data-k="textos.nombre" maxlength="80">
+            </div>
+            <div class="campo" data-interruptor="cargo">
+              <div class="lbl"><label>Texto para el cargo</label><input type="color" class="mini" data-k="estilo.cargo" title="Color"></div>
+              <input type="text" data-k="textos.cargo" maxlength="80">
+            </div>
+          </div>
+
+          <div class="grupo" data-interruptor="reto">
+            <h3>Reto</h3>
+            <div class="campo">
+              <div class="lbl"><label>Nombre de la sección</label><input type="color" class="mini" data-k="estilo.reto" title="Color del recuadro del reto"></div>
+              <input type="text" data-k="textos.reto" maxlength="40">
+            </div>
+            <div class="campo">
+              <div class="lbl"><label>Pregunta</label><input type="color" class="mini" data-k="estilo.pregunta" title="Color"></div>
+              <textarea data-k="textos.pregunta" maxlength="300" placeholder="Si la dejas vacía, el reto no aparece."></textarea>
+            </div>
+            <div class="campo"><label>Texto de ayuda en la respuesta</label><input type="text" data-k="textos.respuesta" maxlength="80"></div>
+          </div>
+
+          <h3>Envío</h3>
+          <div class="campo">
+            <div class="lbl">
+              <label>Texto del botón</label>
+              <div class="minis">
+                <input type="color" class="mini" data-k="estilo.boton" title="Color del botón">
+                <input type="color" class="mini" data-k="estilo.botonTexto" title="Color de las letras del botón">
+              </div>
+            </div>
+            <input type="text" data-k="textos.enviar" maxlength="40">
+          </div>
+          <div class="campo"><label>Mensaje mientras vuela la paloma</label><input type="text" data-k="textos.enviando" maxlength="60"></div>
+
+          <h3>Pantalla de despedida</h3>
+          <div class="campo">
+            <div class="lbl"><label>Sello (con el check)</label><input type="color" class="mini" data-k="estilo.registrada" title="Color del check y el sello"></div>
+            <input type="text" data-k="textos.registrada" maxlength="40">
+          </div>
+          <div class="campo">
+            <div class="lbl"><label>Mensaje de agradecimiento</label><input type="color" class="mini" data-k="estilo.gracias" title="Color"></div>
+            <input type="text" data-k="textos.gracias" maxlength="80">
+          </div>
+          <div class="campo">
+            <label>Frase de cierre</label>
+            <input type="text" data-k="textos.graciasSub" maxlength="120" placeholder="Vacía = una frase de cierre al azar">
+            <div class="ayuda">Al azar salen frases como «Tu voz hace la diferencia» o «Juntos construimos un mejor lugar para trabajar».</div>
+          </div>
+          <button type="button" class="btn btn-ghost btn-carga" id="btnVerDespedida">▶ Ver paloma y despedida</button>
+        </div>
+
+        <!-- APARIENCIA -->
+        <div class="seccion" id="s-apariencia">
+          <h3>Combinaciones rápidas</h3>
+          <div class="presets" id="presets"></div>
+          <p class="ayuda" style="margin-top:0">Cambian todos los colores a la vez. Luego puedes ajustar cada texto desde su círculo de color.</p>
+          <h3>Nubes y opciones</h3>
+          <div class="colores">
+            <label class="color"><input type="color" data-k="estilo.nube"><span>Nubes<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.opcion"><span>Opciones<small></small></span></label>
+          </div>
+          <h3>Colores generales</h3>
+          <div class="colores">
+            <label class="color"><input type="color" data-k="estilo.fondo"><span>Fondo 1<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.fondo2"><span>Fondo 2<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.tarjeta"><span>Tarjetas<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.acento"><span>Casillas y detalles<small></small></span></label>
+            <label class="color"><input type="color" data-k="estilo.texto"><span>Texto escrito<small></small></span></label>
+          </div>
+          <p class="ayuda">El fondo es un degradado del Fondo 1 al Fondo 2. Usa el mismo color en ambos para un fondo plano.</p>
+        </div>
+
+        <div class="acciones">
+          <div class="estado">Estado: <span class="pill borrador" id="estadoPill">Nueva</span></div>
+          <button class="btn btn-ghost" id="btnGuardar">Guardar</button>
+          <button class="btn btn-green" id="btnPublicar">Publicar y obtener enlace</button>
+          <button class="btn btn-ghost" id="btnCerrar" hidden>Cerrar participación</button>
+        </div>
+
+        <div class="enlace" id="enlaceBox">
+          <b>Enlace para tu equipo</b>
+          <div class="enlace-fila">
+            <input id="enlace" readonly>
+            <button class="btn btn-primary" id="btnCopiar">Copiar</button>
+            <a class="btn btn-white" id="btnAbrir" target="_blank" rel="noopener">Abrir</a>
+            <a class="btn btn-white" id="btnWhats" target="_blank" rel="noopener">WhatsApp</a>
+            <a class="btn btn-white" id="btnRegistros">Ver registros</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA PREVIA -->
+      <aside class="previa">
+        <div class="previa-tit">Así lo verá el trabajador</div>
+        <div class="phone" id="phone"><div class="screen" id="screen"></div></div>
+        <div class="previa-botones">
+          <button type="button" class="btn btn-ghost btn-carga" data-ver-carga>▶ Pantalla de carga</button>
+          <button type="button" class="btn btn-ghost btn-carga" id="btnNublar">☁️ Volver a nublar</button>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+<script type="module">
+  import { iniciarEditor, toast } from "./js/editor-pausa.js";
+  import { TIPO, DEFAULTS, normalizar, montarSugerencia } from "./js/sugerencia-vista.js";
+
+  const $ = (id) => document.getElementById(id);
+  const limpias = (lista) => lista.filter((o) => o.texto.trim() || o.emoji.trim())
+    .map((o) => ({ emoji: o.emoji.trim(), texto: o.texto.trim() }));
+
+  // Muestra solo los ajustes del tipo de respuesta elegido.
+  function pintarModo(ctx) {
+    const abierta = ctx.datos.modo === "abierta";
+    $("bloqueAbierta").hidden = !abierta;
+    $("bloqueCerrada").hidden = abierta;
+  }
+
+  const ctx = await iniciarEditor({
+    TIPO, DEFAULTS, normalizar,
+    montar: montarSugerencia,
+    estiloDePreset: (p) => ({
+      fondo: p.fondo, fondo2: p.fondo2, tarjeta: p.tarjeta, texto: p.texto, acento: p.a,
+      titulo: p.a, tema: p.b, descripcion: p.texto, nube: p.a, opcion: p.a,
+      participacion: p.b, nombre: p.a, cargo: p.a,
+      reto: p.b, pregunta: p.texto, boton: p.a, botonTexto: "#ffffff", registrada: "#12a07c", gracias: p.b
+    }),
+    camposGuardar: (d) => ({
+      tema: d.tema.trim(),
+      descripcion: d.descripcion.trim(),
+      modo: d.modo,
+      permitirOtra: !!d.permitirOtra,
+      opciones: limpias(d.opciones),
+      video: d.video.trim(),
+      imagen: d.imagen.trim()
+    }),
+    antesDePublicar: (d) => {
+      if (!d.tema.trim()) {
+        document.querySelector('.tab[data-s="contenido"]').click();
+        $("fTema").focus();
+        toast("Escribe la pregunta para el equipo.");
+        return false;
+      }
+      if (d.modo === "cerrada" && limpias(d.opciones).length < 2) {
+        document.querySelector('.tab[data-s="respuesta"]').click();
+        toast("Con respuesta cerrada necesitas al menos 2 opciones.");
+        return false;
+      }
+      return true;
+    },
+    alPintar: (ctx) => pintarModo(ctx),
+    alCambiar: (ruta, ctx) => { if (ruta === "modo") pintarModo(ctx); }
+  });
+
+  $("btnNublar").onclick = () => { ctx.irAPrevia(); ctx.vista.nublar(); };
+</script>
+</body>
+</html>

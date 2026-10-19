@@ -1,0 +1,115 @@
+/* sugerencia.css — Sugerencias de Aprendizaje (nubes y paloma).
+   Se carga junto a css/pausa-activa.css (base .pa). */
+.su{position:relative}
+
+.su-cabeza{text-align:center}
+.su-tag{
+  display:inline-block;font-family:var(--pa-titulos);font-weight:600;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--pa-acento);background:color-mix(in srgb,var(--pa-acento) 11%,transparent);padding:6px 12px;border-radius:999px;margin-bottom:12px;
+}
+.su-cabeza .pa-video{margin-top:4px}
+.su .su-tema{font-size:22px;line-height:1.25;margin-bottom:14px}
+.su .su-sub{margin-top:24px}
+
+/* ---------- Respuesta abierta ---------- */
+.su-abierta textarea{
+  display:block;width:100%;min-height:130px;resize:vertical;padding:14px;border-radius:16px;
+  border:2px solid color-mix(in srgb,var(--pa-acento) 22%,transparent);
+  background:color-mix(in srgb,var(--pa-acento) 4%,var(--pa-tarjeta));color:var(--pa-texto);
+  font:inherit;font-size:16px;font-weight:600;line-height:1.5;
+}
+.su-abierta textarea::placeholder{color:color-mix(in srgb,var(--pa-texto) 40%,transparent);font-weight:500}
+.su-abierta textarea:focus{outline:none;border-color:var(--pa-acento);box-shadow:0 0 0 4px color-mix(in srgb,var(--pa-acento) 16%,transparent)}
+.su-contador{text-align:right;font-size:12px;font-weight:700;opacity:.55;margin-top:4px}
+
+/* ---------- Respuesta cerrada: opciones nubladas ---------- */
+.su-como{
+  display:flex;gap:10px;align-items:flex-start;margin:0 0 6px;padding:12px 14px;border-radius:14px;
+  background:color-mix(in srgb,var(--su-nube) 20%,transparent);font-size:14px;font-weight:700;line-height:1.45;
+}
+.su-como span:first-child{font-size:20px;line-height:1}
+.su-progreso{text-align:center;font-size:13px;font-weight:800;color:var(--su-opcion);margin:10px 0}
+.su-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.su-opt{
+  position:relative;min-height:108px;padding:14px 8px;border-radius:18px;cursor:pointer;overflow:hidden;
+  border:2px solid color-mix(in srgb,var(--su-opcion) 25%,transparent);
+  background:color-mix(in srgb,var(--su-opcion) 5%,var(--pa-tarjeta));color:var(--pa-texto);font:inherit;
+  transition:border-color .2s,background .2s,box-shadow .2s,transform .1s;
+  animation:su-entrar .5s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i) * .07s);
+}
+.su-opt:active{transform:scale(.97)}
+.su-opt-cont{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:100%;
+  font-size:14px;font-weight:800;line-height:1.25;filter:blur(8px);opacity:.45;
+  transition:filter .55s ease,opacity .55s ease;
+}
+.su-opt .emo{font-size:34px;line-height:1;display:inline-block}
+.su-nube{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:radial-gradient(ellipse at 50% 40%,color-mix(in srgb,var(--su-nube) 35%,#fff) 0%,color-mix(in srgb,var(--su-nube) 60%,#fff) 100%);
+  transition:opacity .55s ease,transform .65s cubic-bezier(.3,0,.3,1);
+}
+.su-nube-emo{font-size:40px;line-height:1;animation:su-flotar 3s ease-in-out infinite;animation-delay:calc(var(--i) * .35s)}
+.su-nube-tx{font-size:12px;font-weight:800;color:#2b4458}
+.su-opt.descubierta .su-opt-cont{filter:none;opacity:1}
+.su-opt.descubierta .su-nube{opacity:0;transform:translateY(-34px) scale(1.5);pointer-events:none}
+.su-opt.soplando .emo{animation:pa-pulgar .8s cubic-bezier(.3,1.6,.5,1)}
+.su-opt.on{
+  border-color:var(--su-opcion);background:color-mix(in srgb,var(--su-opcion) 14%,var(--pa-tarjeta));
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--su-opcion) 15%,transparent);
+}
+.su-opt.on::before{
+  content:"✓";position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;background:var(--su-opcion);color:#fff;font-size:13px;font-weight:900;
+}
+.su-opt.on .emo{animation:pa-pulgar .9s cubic-bezier(.3,1.6,.5,1)}
+.su-otra-input{margin-top:10px}
+
+/* ---------- Vuelo de la paloma ---------- */
+.su-vuelo{
+  position:absolute;left:0;right:0;top:0;height:100%;z-index:40;overflow:hidden;
+  background:color-mix(in srgb,var(--pa-fondo) 82%,transparent);backdrop-filter:blur(6px);
+}
+.pa-pagina > .su-vuelo{position:fixed;inset:0;height:auto}
+.pa > .su-vuelo{width:auto;max-width:none;margin:0}
+.su-carta-sola{position:absolute;left:50%;top:50%;width:84px;opacity:0;transform:translate(-50%,-50%) scale(.3)}
+.su-carta-sola svg{display:block;width:100%;filter:drop-shadow(0 8px 18px rgba(15,36,52,.18))}
+.su-paloma{position:absolute;left:50%;top:50%;width:150px;opacity:0}
+.su-paloma-svg{display:block;width:100%;overflow:visible;filter:drop-shadow(0 10px 18px rgba(15,36,52,.18))}
+.su-ala{transform-origin:62px 46px;animation:su-aletear .2s ease-in-out infinite alternate}
+.su-carta-pico{opacity:0}
+.su-enviando{
+  position:absolute;left:0;right:0;bottom:16%;margin:0;text-align:center;opacity:0;
+  font-family:var(--pa-titulos);font-weight:600;font-size:18px;color:var(--pa-texto);
+}
+.volando .su-carta-sola{animation:su-carta 2.5s ease forwards}
+.volando .su-paloma{animation:su-volar 2.5s cubic-bezier(.45,0,.4,1) forwards}
+.volando .su-carta-pico{animation:su-pico 2.5s linear forwards}
+.volando .su-enviando{animation:su-texto 2.5s ease forwards}
+
+@keyframes su-entrar{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes su-flotar{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes su-aletear{from{transform:rotate(-14deg)}to{transform:rotate(52deg)}}
+@keyframes su-carta{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-8deg)}
+  14%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(3deg)}
+  24%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+  40%{opacity:1;transform:translate(-50%,-50%) scale(.45)}
+  42%,100%{opacity:0;transform:translate(-50%,-50%) scale(.45)}
+}
+@keyframes su-volar{
+  0%{opacity:0;transform:translate(-260%,90%) rotate(12deg) scale(.7)}
+  12%{opacity:1}
+  40%{opacity:1;transform:translate(-70%,-81%) rotate(0) scale(1)}
+  52%{transform:translate(-70%,-88%) rotate(-5deg) scale(1)}
+  100%{opacity:1;transform:translate(260%,-430%) rotate(-16deg) scale(.55)}
+}
+@keyframes su-pico{0%,41%{opacity:0}42%,100%{opacity:1}}
+@keyframes su-texto{0%,15%{opacity:0;transform:translateY(8px)}25%,82%{opacity:1;transform:none}100%{opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  .su-opt,.su-nube-emo,.su-ala,.su-opt .emo{animation:none!important}
+  .su-opt-cont,.su-nube{transition:none}
+  .volando .su-carta-sola,.volando .su-paloma,.volando .su-carta-pico{animation:none}
+  .volando .su-enviando{animation:none;opacity:1}
+}

@@ -1,0 +1,76 @@
+/* media.css — imagen con "toca para ampliar" y visor con zoom (js/media.js) */
+
+/* ---------- Imagen dentro de la pausa ---------- */
+.pa-imagen{margin-top:12px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.pa-imagen:first-child{margin-top:0}
+.pa-img-btn{
+  position:relative;display:block;width:100%;padding:0;border:0;border-radius:16px;overflow:hidden;
+  background:color-mix(in srgb,var(--pa-acento,#1f6fd6) 8%,transparent);cursor:zoom-in;
+  box-shadow:0 6px 18px rgba(15,36,52,.10);
+}
+.pa-img-btn img{display:block;width:100%;height:auto;max-height:420px;object-fit:cover}
+.pa-img-btn:focus-visible{outline:3px solid var(--pa-acento,#1f6fd6);outline-offset:3px}
+.pa-img-lupa{
+  position:absolute;right:10px;bottom:10px;width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;background:rgba(15,36,52,.62);color:#fff;
+  backdrop-filter:blur(4px);animation:pa-lupa 2.4s ease-in-out infinite;
+}
+.pa-img-lupa svg{width:22px;height:22px}
+.pa-img-aviso{
+  margin:0;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  font-size:13.5px;font-weight:800;text-align:center;color:var(--pa-acento,#1f6fd6);
+  padding:7px 14px;border-radius:999px;background:color-mix(in srgb,var(--pa-acento,#1f6fd6) 10%,transparent);
+}
+.pa-img-error{
+  width:100%;padding:18px;border-radius:14px;text-align:center;font-size:13.5px;font-weight:700;
+  color:#b4380a;background:#fff1ea;
+}
+.pa-video[hidden] + .pa-imagen{margin-top:0}
+.pa-desc:empty + .pa-video[hidden] + .pa-imagen{margin-top:4px}
+@keyframes pa-lupa{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* ---------- Visor a pantalla completa ---------- */
+.visor{
+  position:fixed;inset:0;z-index:100;background:rgba(8,18,28,.94);
+  animation:visor-entrar .2s ease-out;font-family:'Nunito','Plus Jakarta Sans',system-ui,sans-serif;
+}
+.visor.saliendo{opacity:0;transition:opacity .18s ease}
+.visor-escena{position:absolute;inset:0;overflow:hidden;touch-action:none;cursor:grab}
+.visor-escena:active{cursor:grabbing}
+.visor-escena img{
+  position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;
+  user-select:none;-webkit-user-select:none;-webkit-user-drag:none;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);border-radius:6px;
+}
+.visor-cerrar{
+  position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;border:0;
+  background:rgba(255,255,255,.14);color:#fff;font-size:30px;line-height:1;cursor:pointer;
+}
+.visor-cerrar:hover,.visor-barra button:hover{background:rgba(255,255,255,.26)}
+.visor-barra{
+  position:absolute;left:50%;bottom:52px;transform:translateX(-50%);display:flex;gap:6px;
+  background:rgba(255,255,255,.1);padding:6px;border-radius:999px;backdrop-filter:blur(6px);
+}
+.visor-barra button{
+  width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.12);
+  color:#fff;font-size:22px;font-weight:700;cursor:pointer;
+}
+.visor-ayuda{
+  position:absolute;left:0;right:0;bottom:16px;text-align:center;padding:0 16px;
+  color:rgba(255,255,255,.75);font-size:12.5px;font-weight:600;pointer-events:none;
+}
+@keyframes visor-entrar{from{opacity:0}to{opacity:1}}
+
+@media (prefers-reduced-motion:reduce){
+  .pa-img-lupa,.visor{animation:none}
+}
+
+/* ---------- Editor: campo de imagen ---------- */
+.img-ed{display:flex;flex-direction:column;gap:8px}
+.img-ed-fila{display:flex;gap:8px;flex-wrap:wrap}
+.img-ed-fila input[type=url]{flex:1 1 220px}
+.img-ed-fila .btn{padding:10px 14px;font-size:13.5px}
+.img-ed-previa{display:flex;align-items:center;gap:12px;padding:8px;border:1.5px solid var(--line,#e1e8f0);border-radius:12px;background:#fbfdff}
+.img-ed-previa img{width:64px;height:64px;object-fit:cover;border-radius:9px;flex:none;background:#eef2f6}
+.img-ed-previa span{flex:1;font-size:13px;color:var(--muted,#5a6e7f);min-width:0;overflow-wrap:anywhere}
+.img-ed-previa .btn{padding:8px 12px;font-size:13px}

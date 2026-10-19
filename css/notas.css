@@ -1,0 +1,167 @@
+/* notas.css — Notas rápidas del inicio (js/notas.js).
+   Rojo = muy importante · Amarillo = importante · Verde = puede esperar. */
+/* Columna con sombreado azul clarito para diferenciarla del resto */
+.notas{
+  position:sticky;top:16px;min-width:0;max-height:calc(100vh - 32px);
+  display:flex;flex-direction:column;gap:10px;
+  padding:14px 12px;border-radius:20px;
+  background:linear-gradient(180deg,#eef5fe 0%,#e8f2fd 100%);
+  border:1px solid #d6e6fa;box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+.notas-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px}
+.notas-top h2{margin:0;font-size:14.5px;display:flex;align-items:center;gap:6px;letter-spacing:-.01em;white-space:nowrap;min-width:0}
+.notas-n{background:var(--blue);color:#fff;font-size:11px;font-weight:800;min-width:20px;height:20px;padding:0 6px;border-radius:999px;display:inline-grid;place-items:center}
+.notas-hist{
+  flex:none;border:1px solid var(--line);background:var(--surface);padding:5px 9px;border-radius:10px;
+  font:inherit;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
+}
+.notas-hist:hover{background:var(--blue-soft);color:var(--blue-dark);border-color:#c7dbf6}
+
+/* La lista hace scroll propio: nunca empuja ni tapa otros elementos */
+.notas-lista{display:flex;flex-direction:column;gap:10px;overflow-y:auto;overflow-x:hidden;min-height:0;padding:4px 6px 6px 2px;scrollbar-width:thin}
+.notas-vacio{
+  display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;padding:16px 12px;border-radius:14px;
+  border:1.5px dashed #c7dbf6;background:rgba(255,255,255,.75);color:var(--muted);font-size:13px;line-height:1.5;
+}
+.notas-vacio b{color:var(--ink);font-size:14px}
+.notas-vacio p{margin:0}
+/* "+" pequeño dentro del texto, alineado con la línea */
+.notas-mini{
+  display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;margin:0 2px;
+  border-radius:50%;background:var(--grad);color:#fff;vertical-align:-5px;
+}
+.notas-mini svg{width:12px;height:12px}
+
+/* Tarjeta de nota */
+.nota{
+  --n:#f0a500;
+  position:relative;flex:none;border-radius:16px;padding:12px 14px 12px 14px;cursor:pointer;
+  background:color-mix(in srgb,var(--n) 9%,#fff);
+  border:1.5px solid color-mix(in srgb,var(--n) 32%,transparent);border-left:6px solid var(--n);
+  box-shadow:0 4px 14px rgba(15,36,52,.06);
+  transition:transform .15s,box-shadow .15s;
+  animation:nota-entrar .35s cubic-bezier(.2,.9,.3,1) both;animation-delay:calc(var(--i,0) * .04s);
+}
+.nota.alta{--n:#e5484d}
+.nota.media{--n:#f0a500}
+.nota.baja{--n:#12a07c}
+.nota:hover{transform:translateX(-3px);box-shadow:0 10px 22px rgba(15,36,52,.10)}
+.nota:focus-visible{outline:3px solid color-mix(in srgb,var(--n) 45%,transparent);outline-offset:2px}
+.nota-tit{display:flex;align-items:flex-start;gap:8px}
+.nota-tit b{font-size:14.5px;line-height:1.3;overflow-wrap:anywhere}
+.nota-dot{width:10px;height:10px;border-radius:50%;background:var(--n);flex:none;margin-top:4px;box-shadow:0 0 0 3px color-mix(in srgb,var(--n) 22%,transparent)}
+.nota.alta .nota-dot{animation:nota-pulso 1.8s ease-in-out infinite}
+/* El mensaje se ve completo */
+.nota-tx{margin:6px 0 0;font-size:13px;color:var(--muted);line-height:1.45;white-space:pre-line;overflow-wrap:anywhere}
+.nota-fecha{
+  display:inline-flex;margin-top:8px;font-size:12px;font-weight:700;color:var(--ink);
+  background:#fff;padding:3px 9px;border-radius:999px;border:1px solid var(--line);
+}
+.nota-fecha.pronto{color:#c2410c;border-color:#f6cdb8;background:#fff6f0}
+
+/* ¿Completado? 🗑 ✕ ✓ — va debajo del mensaje, dentro de la misma tarjeta */
+.nota-confirma{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  margin:10px -4px -2px;padding:10px 8px 8px;border-radius:12px;
+  background:color-mix(in srgb,var(--n) 16%,#fff);animation:nota-aparecer .18s ease-out;
+}
+.nota-confirma > span{font-weight:800;font-size:14px;color:var(--ink);line-height:1.2}
+.nota-botones{display:flex;align-items:center;justify-content:center;gap:8px}
+.nota-botones button{width:36px;height:36px;padding:0;border-radius:50%;font-size:16px;font-weight:900;cursor:pointer;display:grid;place-items:center;transition:transform .1s}
+.nota-botones .borrar{width:30px;height:30px;font-size:13px;background:transparent;border:1.5px dashed #e3a99a;filter:grayscale(.3);margin-right:2px}
+.nota-botones .borrar:hover{background:#fff1ea;border-style:solid;filter:none}
+.nota-botones button:active{transform:scale(.92)}
+.nota-botones .no{background:#fff;color:#b4380a;border:1.5px solid #f6cdb8}
+.nota-botones .si{background:var(--green);color:#fff;border:0;box-shadow:0 6px 14px rgba(18,160,124,.32)}
+.nota.saliendo{animation:nota-salir .45s ease-in forwards;pointer-events:none}
+
+/* Botón + */
+.notas-mas{
+  align-self:center;flex:none;width:50px;height:50px;padding:0;border-radius:50%;border:0;cursor:pointer;
+  background:var(--grad);color:#fff;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(31,111,214,.3);
+  transition:transform .2s,box-shadow .2s;
+}
+.notas-mas svg{width:24px;height:24px;display:block}
+.notas-mas:hover{transform:rotate(90deg) scale(1.06);box-shadow:0 14px 28px rgba(31,111,214,.38)}
+.notas-mas:focus-visible{outline:3px solid rgba(31,111,214,.35);outline-offset:3px}
+
+/* ---------- Recuadro de nueva nota ---------- */
+.nf{max-width:520px}
+.nf-campo{margin-bottom:16px}
+.nf-campo > label{display:block;font-size:12.5px;font-weight:700;margin-bottom:6px}
+.nf-campo .opc{font-weight:500;color:var(--muted)}
+.nf-campo input[type=text],.nf-campo input:not([type]),.nf-campo textarea,.nf-fecha input{
+  width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;font:inherit;font-size:14.5px;
+  background:#fbfdff;color:var(--ink);
+}
+.nf-campo textarea{resize:vertical;line-height:1.5}
+.nf-campo input:focus,.nf-campo textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(31,111,214,.12);background:#fff}
+.nf-imp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.nf-imp label{--n:#f0a500;position:relative;cursor:pointer}
+.nf-imp label.alta{--n:#e5484d}
+.nf-imp label.baja{--n:#12a07c}
+.nf-imp input{position:absolute;opacity:0;pointer-events:none}
+.nf-imp span{
+  display:flex;flex-direction:column;gap:2px;height:100%;padding:10px;border-radius:12px;font-size:13.5px;font-weight:800;
+  border:2px solid color-mix(in srgb,var(--n) 30%,transparent);background:color-mix(in srgb,var(--n) 6%,#fff);
+  transition:background .15s,border-color .15s,box-shadow .15s;
+}
+.nf-imp small{font-size:11.5px;font-weight:600;color:var(--muted)}
+.nf-imp input:checked + span{border-color:var(--n);background:color-mix(in srgb,var(--n) 16%,#fff);box-shadow:0 0 0 3px color-mix(in srgb,var(--n) 18%,transparent)}
+.nf-imp input:focus-visible + span{outline:3px solid rgba(31,111,214,.35);outline-offset:2px}
+.nf-fecha{display:grid;grid-template-columns:1fr 130px;gap:8px}
+.nf-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.nf-chips button{border:0;padding:6px 11px;border-radius:999px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;background:var(--blue-soft);color:var(--blue-dark)}
+.nf-chips button:hover{filter:brightness(.95)}
+.nf-chips button[data-cuando=nada]{background:#eef1f5;color:var(--muted)}
+.nf-ayuda{font-size:12px;color:var(--muted);margin-top:6px}
+.nf-err{background:var(--danger-bg);color:var(--danger);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:600;margin-bottom:12px}
+.nf-acciones{display:flex;justify-content:flex-end;gap:10px}
+
+/* ---------- Historial ---------- */
+.nh-barra{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin:-6px 0 14px}
+.nh-barra button{
+  border:1.5px solid #f6cdb8;background:#fff;color:#c2410c;padding:7px 12px;border-radius:999px;
+  font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;
+}
+.nh-barra button:hover{background:#fff1ea}
+.nh-barra button.fuerte{background:#fff1ea}
+.nh-barra button.fuerte:hover{background:#ffe2d3}
+.nh-barra button:disabled{opacity:.5;cursor:default}
+.nh-lista{display:flex;flex-direction:column;gap:8px}
+.nh-fila{
+  --n:#f0a500;display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:14px;
+  border:1px solid var(--line);background:#fbfdff;
+}
+.nh-fila.alta{--n:#e5484d}
+.nh-fila.baja{--n:#12a07c}
+.nh-info{flex:1;min-width:0}
+.nh-info b{display:block;font-size:14.5px;overflow-wrap:anywhere}
+.nh-info p{margin:3px 0 0;font-size:13px;color:var(--muted);white-space:pre-line;overflow-wrap:anywhere}
+.nh-info small{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.nh-info small.ok{background:var(--green-soft);color:var(--green-dark)}
+.nh-info small.vencio{background:#fff1ea;color:#c2410c}
+.nh-acc{display:flex;gap:6px;flex:none}
+.nh-acc button{width:34px;height:34px;border-radius:10px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-size:15px}
+.nh-acc button:hover{border-color:#c7dbf6;background:var(--blue-soft)}
+.nh-acc button.borrar:hover{border-color:#f6cdb8;background:#fff1ea}
+
+@keyframes nota-entrar{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+@keyframes nota-salir{to{opacity:0;transform:translateX(40px) scale(.96)}}
+@keyframes nota-aparecer{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+@keyframes nota-pulso{0%,100%{box-shadow:0 0 0 3px color-mix(in srgb,var(--n) 22%,transparent)}50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--n) 10%,transparent)}}
+
+/* Pantallas medianas y celular: las notas bajan debajo del contenido, en cuadrícula */
+@media (max-width:1180px){
+  .notas{position:static;max-height:none}
+  .notas-lista{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));overflow:visible;padding:2px}
+  .notas-mas{align-self:flex-start}
+}
+@media (max-width:520px){
+  .nf-imp{grid-template-columns:1fr}
+  .nf-fecha{grid-template-columns:1fr 110px}
+}
+@media (prefers-reduced-motion:reduce){
+  .nota,.nota.alta .nota-dot,.nota-confirma{animation:none}
+}

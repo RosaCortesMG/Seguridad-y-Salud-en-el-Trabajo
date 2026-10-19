@@ -40,6 +40,27 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // ---- Notas rápidas de cada usuario de RH ----
+    // usuarios/{uid}/notas/{id}: titulo, texto, importancia, hasta, completada, completadaEn, creado
+    match /usuarios/{uid}/notas/{nota} {
+      // Solo el dueño las ve y puede borrarlas del historial.
+      allow read, delete: if esDueno(uid);
+
+      allow create: if esDueno(uid)
+        && request.resource.data.keys().hasOnly(['titulo', 'texto', 'importancia', 'hasta', 'completada', 'completadaEn', 'creado'])
+        && texto(request.resource.data.titulo, 80)
+        && request.resource.data.texto is string && request.resource.data.texto.size() <= 500
+        && request.resource.data.importancia in ['alta', 'media', 'baja']
+        && (request.resource.data.hasta == null || request.resource.data.hasta is timestamp)
+        && request.resource.data.completada == false
+        && request.resource.data.creado == request.time;
+
+      // Solo se marca como completada o se devuelve a pendientes.
+      allow update: if esDueno(uid)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['completada', 'completadaEn'])
+        && request.resource.data.completada is bool;
+    }
+
     // ---- Pausas creadas por RH (activa, motivacional, campaña, sugerencia) ----
     // ediciones/{id}: uid (dueño), tipo, titulo, estado, creado, ...contenido
     match /ediciones/{id} {
@@ -68,11 +89,34 @@ service cloud.firestore {
       allow delete: if autenticado() && resource.data.uid == request.auth.uid;
     }
 
+    // ---- Enlaces cortos: cortos/{código} → { e: id de la edición, uid, creado } ----
+    match /cortos/{codigo} {
+      // Cualquiera con el enlace corto puede abrirlo (no listar todos).
+      allow get: if true;
+      // Solo el dueño de la edición crea su código; si el código ya existe, se rechaza
+      // (sería una actualización) y la app prueba otro.
+      allow create: if autenticado()
+        && codigo.matches('^[A-Za-z0-9]{6}$')
+        && request.resource.data.keys().hasOnly(['e', 'uid', 'creado'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.e is string
+        && get(/databases/$(database)/documents/ediciones/$(request.resource.data.e)).data.uid == request.auth.uid
+        && request.resource.data.creado == request.time;
+      allow delete: if autenticado() && resource.data.uid == request.auth.uid;
+    }
+
     // ---- Registros de participación (quién, cómo y qué) ----
     // registros/{id}: edicionId, propietario, tipo, participante{}, contenido{}, medio{}, authUid?, creado
     match /registros/{id} {
       function edicion() {
         return get(/databases/$(database)/documents/ediciones/$(request.resource.data.edicionId)).data;
+      }
+      // Si la pausa tiene horario activo, solo se responde entre inicio y fin.
+      function enHorario(ed) {
+        let h = ed.get('horario', {});
+        return h.get('activo', false) != true
+          || ((h.get('inicio', null) == null || request.time >= h.get('inicio', null))
+              && (h.get('fin', null) == null || request.time <= h.get('fin', null)));
       }
 
       // Solo el usuario de RH dueño de la edición ve sus registros.
@@ -85,6 +129,7 @@ service cloud.firestore {
         && request.resource.data.edicionId is string
         && exists(/databases/$(database)/documents/ediciones/$(request.resource.data.edicionId))
         && edicion().estado == 'activa'
+        && enHorario(edicion())
         && request.resource.data.propietario == edicion().uid
         && request.resource.data.tipo == edicion().tipo
         && request.resource.data.participante is map

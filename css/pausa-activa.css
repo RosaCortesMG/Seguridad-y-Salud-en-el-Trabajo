@@ -16,6 +16,20 @@
 .pa > *{width:100%;max-width:520px;margin-inline:auto}
 .pa.pa-pagina{min-height:100vh;padding-top:24px}
 .pa [data-c]{color:var(--c)}
+/* Elementos que RH desactivó en el editor (interruptor Activo/Inactivo) */
+.pa .pa-off{display:none!important}
+
+/* Etiqueta de horario: "⏰ Disponible hasta…" */
+.pa-limite{
+  display:flex;align-items:center;justify-content:center;gap:8px;text-align:center;
+  padding:9px 14px;border-radius:999px;font-size:13px;font-weight:800;line-height:1.35;
+  color:var(--pa-acento);background:var(--pa-tarjeta);
+  border:2px solid color-mix(in srgb,var(--pa-acento) 25%,transparent);
+  box-shadow:0 4px 14px color-mix(in srgb,var(--pa-acento) 14%,transparent);
+}
+.pa-limite-ico{font-size:16px;animation:pa-tic 2s ease-in-out infinite}
+.pa-limite.urgente{color:#c2410c;border-color:#f6cdb8;background:#fff6f0}
+@keyframes pa-tic{0%,100%{transform:rotate(0)}10%{transform:rotate(-14deg)}20%{transform:rotate(12deg)}30%{transform:rotate(0)}}
 
 .pa-card{background:var(--pa-tarjeta);border-radius:22px;padding:20px 18px;box-shadow:0 6px 22px rgba(15,36,52,.08)}
 .pa h1,.pa h2,.pa legend,.pa-reto-tag,.pa-enviar{font-family:var(--pa-titulos)}
@@ -103,11 +117,9 @@
 }
 .pa .pa-gracias h2{margin:10px 0 0;font-size:30px;line-height:1.15;opacity:0;animation:pa-subir .5s ease-out 1.25s forwards}
 .pa-gracias p{margin:0;font-size:17px;font-weight:700;line-height:1.45;max-width:24ch;opacity:0;animation:pa-subir .5s ease-out 1.5s forwards}
-.pa-firma{
-  margin-top:18px;font-weight:900;font-size:13px;letter-spacing:.32em;padding-left:.32em;
-  opacity:0;animation:pa-aparecer .6s ease-out 1.9s forwards;
-}
-.pa-firma::before,.pa-firma::after{content:"";display:inline-block;width:22px;height:2px;border-radius:2px;background:currentColor;opacity:.35;vertical-align:middle;margin:0 10px}
+/* Firma manuscrita «SST & RH» (js/firma.js + css/firma.css): se escribe sola */
+.pa-firma{width:100%;display:flex;justify-content:center;margin-top:12px;color:var(--pa-texto);opacity:.9}
+.pa-firma .firma{width:min(160px,50%)}
 
 /* Aviso de "no disponible" */
 .pa-aviso{text-align:center;padding:40px 20px}
@@ -134,6 +146,6 @@
 @keyframes pa-subir{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 @keyframes pa-aparecer{to{opacity:.75}}
 @media (prefers-reduced-motion:reduce){
-  .pa .emo{animation:none!important}
+  .pa .emo,.pa-limite-ico{animation:none!important}
   .pa-gracias *{animation:none!important;opacity:1!important;stroke-dashoffset:0!important}
 }

@@ -3,6 +3,8 @@
 // arma palabra por palabra y, debajo, la firma "SST & RH".
 // Las palabras entre *asteriscos* salen destacadas con degradado de color.
 
+import { crearFirma } from "./firma.js";
+
 export const FRASES = {
   pausa_activa: [
     "Es hora de una *Pausa Activa*",
@@ -20,10 +22,59 @@ export const FRASES = {
     "Cuidarte también es parte del *trabajo*",
     "Afloja los hombros, llegó la *Pausa Activa*",
     "Menos tensión, más *movimiento*"
+  ],
+  pausa_motivacional: [
+    "Es hora de una *Pausa Motivacional*",
+    "Ey, esta frase es para *ti*",
+    "Detente un momento y *inspírate*",
+    "Una palabra puede cambiar tu *día*",
+    "Sí, tú, mereces un momento de *inspiración*",
+    "Descubre la frase de la *semana*",
+    "Respira, lee y *sonríe*",
+    "Hoy te traemos una dosis de *motivación*",
+    "Pequeñas palabras, grandes *cambios*",
+    "Tu mente también necesita una *pausa*",
+    "Algo bueno te espera en esta *tarjeta*",
+    "Un respiro para el *alma*",
+    "Cree en ti, hoy y *siempre*",
+    "Llénate de energía con una *frase*",
+    "Las palabras correctas *inspiran*"
+  ],
+  campana_informativa: [
+    "Esto te va a *interesar*",
+    "Es momento de *informarse*",
+    "*SST & RH* te envían el siguiente mensaje",
+    "Tenemos algo importante que *contarte*",
+    "Ey, tómate un minuto para *informarte*",
+    "Sí, tú, esta información es para *ti*",
+    "Mantente al día con *SST & RH*",
+    "Una noticia que no te puedes *perder*",
+    "Información que te *cuida*",
+    "Estar informado también es *prevenir*",
+    "Atento: llegó un nuevo *mensaje*",
+    "Lo que necesitas saber, en un *minuto*",
+    "Descubre lo que tenemos para *ti*",
+    "Tu bienestar empieza por estar *informado*",
+    "Pon atención, esto es *importante*"
+  ],
+  sugerencia_aprendizaje: [
+    "Es momento de *Sugerencias*",
+    "Te *escuchamos*",
+    "Cuando todos participamos todo es más *completo*",
+    "Tu opinión *construye*",
+    "Ey, queremos saber qué *piensas*",
+    "Sí, tú, tu idea *cuenta*",
+    "Juntos aprendemos *mejor*",
+    "Cada sugerencia nos hace *crecer*",
+    "Tu voz es parte del *cambio*",
+    "Las mejores ideas nacen de *todos*",
+    "Hablemos de lo que quieres *aprender*",
+    "Cuéntanos, estamos *atentos*",
+    "Construyamos juntos el *aprendizaje*",
+    "Una idea tuya puede inspirar a *muchos*",
+    "Aquí tu palabra *importa*"
   ]
 };
-
-export const FIRMA = "SST & RH";
 
 export function fraseAleatoria(tipo) {
   const lista = FRASES[tipo] || FRASES.pausa_activa;
@@ -48,7 +99,7 @@ function palabras(frase) {
 
 const PASO = 170;      // ms entre palabra y palabra
 const INICIO = 300;    // ms antes de la primera palabra
-const PAUSA = 1700;    // ms que la frase completa queda en pantalla
+const PAUSA = 2500;    // ms que la frase queda en pantalla (alcanza a escribirse la firma)
 
 /**
  * Muestra la pantalla sobre `contenedor` y resuelve cuando desaparece.
@@ -97,8 +148,7 @@ export function mostrarPantallaCarga(contenedor, { tipo, frase, estilo, fijo = t
 
     const firma = document.createElement("div");
     firma.className = "pc-firma";
-    firma.textContent = FIRMA;
-    firma.style.animationDelay = finPalabras + "ms";
+    firma.append(crearFirma({ retraso: reducido ? 0 : finPalabras }));
 
     const total = reducido ? 2000 : finPalabras + 500 + PAUSA;
     const barra = document.createElement("div");
